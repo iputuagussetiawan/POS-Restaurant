@@ -1,6 +1,7 @@
 import ResponsiveDialog from '@/components/responsive-dialog';
 import React from 'react';
 import ProductForm from './product-form';
+import { useRouter } from 'next/navigation';
 
 interface NewProductDialogProp {
     open: boolean;
@@ -8,6 +9,7 @@ interface NewProductDialogProp {
 }
 
 const NewProductDialog = ({ open, onOpenChange }: NewProductDialogProp) => {
+    const router=useRouter();
     return (
         <div>
             <ResponsiveDialog
@@ -17,7 +19,10 @@ const NewProductDialog = ({ open, onOpenChange }: NewProductDialogProp) => {
                 onOpenChange={onOpenChange}
             >
                 <ProductForm
-                    onSuccess={() => onOpenChange(false)}
+                    onSuccess={(id) => {
+                        onOpenChange(false)
+                        router.push(`/products/${id}`)
+                    }}
                     onCancel={() => onOpenChange(false)}
                 />
             </ResponsiveDialog>
