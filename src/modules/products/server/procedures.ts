@@ -13,7 +13,7 @@ import { TRPCError } from '@trpc/server';
 import { productInsertSchema, productUpdateSchema } from '../schema';
 
 export const productsRouter = createTRPCRouter({
-	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input, ctx }) => {
+	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input}) => {
 		const [createdProduct] = await db
 			.insert(products)
 			.values(input)
@@ -75,7 +75,7 @@ export const productsRouter = createTRPCRouter({
 			};
 		}),
 
-	update: protectedProcedure.input(productUpdateSchema).mutation(async ({ input, ctx }) => {
+	update: protectedProcedure.input(productUpdateSchema).mutation(async ({ input }) => {
 		const [updatedProduct] = await db
 			.update(products)
 			.set(input)
@@ -91,7 +91,7 @@ export const productsRouter = createTRPCRouter({
 	}),
 	remove: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ input, ctx }) => {
+		.mutation(async ({ input }) => {
 			const [removedProduct] = await db
 				.delete(products)
 				.where(and(eq(products.id, input.id)))
