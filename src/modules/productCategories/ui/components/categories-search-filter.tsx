@@ -1,9 +1,9 @@
 import { SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {useProductsFilters } from '../../hooks/use-products-filter';
+import { useCategoriesFilters } from '../../hooks/use-categories-filter';
 
-export const ProductSearchFilter = () => {
-    const [filters, setFilters] = useProductsFilters();
+export const CategoriesSearchFilter = () => {
+    const [filters, setFilters] = useCategoriesFilters();
 
     return (
         <div className="relative">

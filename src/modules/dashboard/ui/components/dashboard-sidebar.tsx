@@ -37,6 +37,12 @@ const firstSection = [
         label: 'Products',
         href: '/products',
     },
+
+    {
+        icon: BoxIcon,
+        label: 'Product Categories',
+        href: '/categories',
+    },
 ];
 
 const secondSection = [
@@ -54,7 +60,7 @@ const DashboardSidebar = () => {
             <SidebarHeader className="text-sidebar-accent-foreground">
                 <Link href="/" className="flex items-center gap-2 px-2 pt-2">
                     <Image src="/logo.svg" alt="Meet.AI" width={36} height={36} />
-                    <p className="text-2xl font-semibold">Meet.AI</p>
+                    <p className="text-2xl font-semibold">Food Order</p>
                 </Link>
             </SidebarHeader>
             <div className="px-4 py-2">

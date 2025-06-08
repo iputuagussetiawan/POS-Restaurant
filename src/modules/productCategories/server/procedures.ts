@@ -10,8 +10,17 @@ import {
     MIN_PAGE_SIZE,
 } from '../../../../constants';
 import { TRPCError } from '@trpc/server';
+import { categoriesInsertSchema, categoriesUpdateSchema } from '../schema';
 
 export const categoriesRouter = createTRPCRouter({
+    create: protectedProcedure.input(categoriesInsertSchema).mutation(async ({ input}) => {
+            const [createdProduct] = await db
+                .insert(categories)
+                .values(input)
+                .returning();
+            return createdProduct;
+        }),
+        
     getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input}) => {
         const [existingCategories] = await db
             .select({
@@ -23,7 +32,7 @@ export const categoriesRouter = createTRPCRouter({
         if (!existingCategories) {
             throw new TRPCError({
                 code: 'NOT_FOUND',
-                message: 'Agent not found',
+                message: 'Category not found',
             });
         }
         return existingCategories;
@@ -75,4 +84,34 @@ export const categoriesRouter = createTRPCRouter({
                 totalPages,
             };
         }),
+
+        update: protectedProcedure.input(categoriesUpdateSchema).mutation(async ({ input }) => {
+                const [updatedCategories] = await db
+                    .update(categories)
+                    .set(input)
+                    .where(and(eq(categories.id, input.id)))
+                    .returning();
+                if (!updatedCategories) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Categories not found',
+                    });
+                }
+                return updatedCategories;
+            }),
+            remove: protectedProcedure
+                .input(z.object({ id: z.string() }))
+                .mutation(async ({ input }) => {
+                    const [removedCategories] = await db
+                        .delete(categories)
+                        .where(and(eq(categories.id, input.id)))
+                        .returning();
+                    if (!removedCategories) {
+                        throw new TRPCError({
+                            code: 'NOT_FOUND',
+                            message: 'Categories not found',
+                        });
+                    }
+                    return removedCategories;
+                }),
 });

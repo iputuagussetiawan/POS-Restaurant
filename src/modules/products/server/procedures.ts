@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { db } from '@/db';
-import { products } from '@/db/schema';
+import { categories, products } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
 import { and, count, desc, eq, getTableColumns, ilike } from 'drizzle-orm';
 import {
@@ -47,16 +47,24 @@ export const productsRouter = createTRPCRouter({
 					.max(MAX_PAGE_SIZE)
 					.default(DEFAULT_PAGE_SIZE),
 				search: z.string().nullish(),
+				categoryId: z.string().nullish(),
 			})
 		)
 		.query(async ({ input }) => {
-			const { search, page, pageSize } = input;
+			const { search, page, pageSize, categoryId } = input;
 			const data = await db
 				.select({
 					...getTableColumns(products),
+					categories: categories,
 				})
 				.from(products)
-				.where(and(search ? ilike(products.name, `%${search}%`) : undefined))
+				.innerJoin(categories, eq(products.categoryId, categories.id))
+				.where(
+					and(
+						search ? ilike(products.name, `%${search}%`) : undefined,
+						categoryId ? eq(products.categoryId, categoryId) : undefined
+					)
+				)
 				.orderBy(desc(products.createdAt), desc(products.id))
 				.limit(pageSize)
 				.offset((page - 1) * pageSize);
