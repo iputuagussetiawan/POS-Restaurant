@@ -11,6 +11,9 @@ import { user } from "./user";
 import { relations } from "drizzle-orm";
 import { post } from "./post";
 
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
 
 export const comment = pgTable("comment", {
 	id: serial("id").primaryKey(),
@@ -34,4 +37,5 @@ export const commentRelations = relations(comment, ({ one }) => ({
 		references: [post.id],
 	}),
 }));
+
 

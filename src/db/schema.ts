@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 import { pgTable, text, timestamp, boolean, pgEnum, decimal } from 'drizzle-orm/pg-core';
-
+import { category } from './schema/category';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
