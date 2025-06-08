@@ -64,7 +64,6 @@ export const Seafood = [
 ];
 
 export async function seedSeafood(categoryId: string) {
-	console.log('🔄 Starting seed process...');
 	try {
 		const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 		const db = drizzle(pool);
@@ -79,11 +78,9 @@ export async function seedSeafood(categoryId: string) {
 		for (const product of seafoodWithCategory) {
 			await db.insert(products).values(product);
 		}
-
 		await pool.end();
-		console.log('✅ Seeding completed!');
 	} catch (err) {
-		console.error('❌ Seeding failed:', err);
+		console.error('❌ Seeding Seafood failed:', err);
 		process.exit(1);
 	}
 }

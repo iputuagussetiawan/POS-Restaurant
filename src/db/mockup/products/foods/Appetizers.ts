@@ -64,7 +64,6 @@ export const Appetizers = [
 ];
 
 export async function seedAppetizers(categoryId: string) {
-	console.log('🔄 Starting seed process...');
 	try {
 		const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 		const db = drizzle(pool);
@@ -81,9 +80,8 @@ export async function seedAppetizers(categoryId: string) {
 		}
 
 		await pool.end();
-		console.log('✅ Seeding completed!');
 	} catch (err) {
-		console.error('❌ Seeding failed:', err);
+		console.error('❌ Seeding Appetizers failed:', err);
 		process.exit(1);
 	}
 }
