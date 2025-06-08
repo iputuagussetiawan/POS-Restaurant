@@ -4,7 +4,6 @@ import { Pool } from 'pg';
 import 'dotenv/config';
 import { products } from '@/db/schema';
 
-
 function generateAppetizersId() {
 	const unixTimestamp = Date.now();
 	const randomSuffix = nanoid(4).toUpperCase();

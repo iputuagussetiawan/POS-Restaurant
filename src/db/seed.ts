@@ -9,6 +9,8 @@ import { seedKidsMenu } from './mockup/products/foods/KidsMenu';
 import { seedDesserts } from './mockup/products/foods/Desserts';
 import { seedMainCourses } from './mockup/products/foods/MainCourses';
 import { seedSalads } from './mockup/products/foods/Salad';
+import { seedSoap } from './mockup/products/foods/Soap';
+import { seedVegetarian } from './mockup/products/foods/Vegetarian';
 
 async function main() {
 	console.log('🔄 Starting seed process...');
@@ -40,6 +42,12 @@ async function main() {
 					break;
                 case 'Salads':
 					seedSalads(category.id);
+					break;
+				case 'Soap':
+					seedSoap(category.id);
+					break;
+				case 'Vegetarian':
+					seedVegetarian(category.id);
 					break;
 				default:
 					break;
