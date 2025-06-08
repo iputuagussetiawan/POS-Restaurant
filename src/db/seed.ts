@@ -2,46 +2,38 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import 'dotenv/config';
 import * as schema from './schema';
-import { faker } from '@faker-js/faker';
-import { nanoid } from 'nanoid';
 import { dataCategories } from './mockup/categories';
+import {seedSeafood } from './mockup/products/foods/Seafood';
+import { seedAppetizers } from './mockup/products/foods/Appetizers';
 
 
 async function main() {
 	console.log('🔄 Starting seed process...');
-
-	try {
-		const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    try {
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 		const db = drizzle(pool);
-
+        console.log('🧹 Cleaning up...');
+        await db.delete(schema.products); // deletes all products
+        await db.delete(schema.categories); // deletes all categories
+        console.log('🗑️  Products and categories deleted');
         for (const category of dataCategories) {
-            const categoryId = nanoid();
-    
-            // 1. Insert category
-            await db.insert(schema.categories).values({
-                id: categoryId,
-                name: category.name,
-                description: category.description,
-                imageUrl: faker.image.url(),
-            });
-    
-            // 2. Insert 5 products for this category
-            const products = Array.from({ length: 5 }).map(() => ({
-                id: nanoid(),
-                categoryId, // FK reference
-                name: faker.commerce.productName(),
-                imageUrl: faker.image.url(),
-            }));
-    
-            await db.insert(schema.products).values(products);
-            console.log(`✅ Inserted category "${category.name}" with 5 products`);
+            console.log('📦 Inserting category:', category.name);
+            await db.insert(schema.categories).values(category);
+            switch (category.name) {
+                case 'Seafood':
+                    seedSeafood(category.id);
+                    break;
+                case 'Appetizers':
+                    seedAppetizers(category.id);
+                    break;
+                default:
+                    break;
+            }
+            console.log('📦 Category:', category.name, 'completed');
         }
-
-		// await db.insert(schema.categories).values(dataCategories);
-
-		await pool.end();
-		console.log('✅ Database seeded successfully!');
-	} catch (err) {
+        console.log('✅ Seeding completed!');
+    }
+    catch (err) {
 		console.error('❌ Seeding failed:', err);
 		process.exit(1);
 	}
