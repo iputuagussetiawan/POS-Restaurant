@@ -1,16 +1,42 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { seed } from "drizzle-seed";
-import { user } from "./schema";
+import { Pool } from "pg";
+import env from "@/lib/env";
+import { categories } from "./schema";
 
-async function main() {
-  const db = drizzle(process.env.DATABASE_URL!);
-  await seed(db, { user }).refine((f) => ({
-    user: {
-        columns: {
-            name: f.fullName(),
-        },
-        count: 20
-    }
-  }));
+const pool = new Pool({
+	connectionString: env.DATABASE_URL,
+});
+
+// TODO: logger true
+export const db = drizzle(pool, { schema });
+export type DB = typeof db;
+
+
+
+const mock = [
+	{
+		name: "Node.js",
+	},
+	{
+		name: "React",
+	},
+	{
+		name: "Python",
+	},
+	{
+		name: "Javascript",
+	},
+	{
+		name: "Algorithms",
+	},
+	{
+		name: "Devops",
+	},
+	{
+		name: "APIs",
+	},
+];
+
+export async function seed(db: DB) {
+	await db.insert(categories).values(mock);
 }
-main();
