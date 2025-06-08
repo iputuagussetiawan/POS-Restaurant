@@ -11,6 +11,8 @@ import { seedMainCourses } from './mockup/products/foods/MainCourses';
 import { seedSalads } from './mockup/products/foods/Salad';
 import { seedSoap } from './mockup/products/foods/Soap';
 import { seedVegetarian } from './mockup/products/foods/Vegetarian';
+import { seedAlcoholic } from './mockup/products/beverage/Alcohol';
+import { seedNonAlcoholic } from './mockup/products/beverage/NoAlcohol';
 
 async function main() {
 	console.log('🔄 Starting seed process...');
@@ -48,6 +50,12 @@ async function main() {
 					break;
 				case 'Vegetarian':
 					seedVegetarian(category.id);
+					break;
+				case 'Alcoholic Beverages':
+					seedAlcoholic(category.id);
+					break;
+				case 'Beverages (Non-Alcoholic)':
+					seedNonAlcoholic(category.id);
 					break;
 				default:
 					break;
