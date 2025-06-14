@@ -13,19 +13,15 @@ const POSPage = () => {
 	return (
 		<div>
 			<HeaderPOS />
-			<main className="flex w-full flex-col bg-muted p-4">
+			<main className="flex flex-col bg-muted p-4">
 				<div className="min-h-screen rounded-2xl bg-white">
-					<div className="flex">
-						<div className="flex-1 p-8">
+					<div className="grid grid-cols-[75%_25%]">
+						<div className="flex-1 p-8 space-y-8">
 							<ProductSearch />
-							<h1>Post Banner</h1>
-							<h2>Product Category</h2>
 							<CategoryList />
-
-							<h2>Products</h2>
 							<ProductList />
 						</div>
-						<div className="relative flex min-h-screen w-[500px] flex-col justify-between rounded-tr-2xl rounded-br-2xl bg-sidebar p-4">
+						<div className="relative flex min-h-screen flex-col justify-between rounded-tr-2xl rounded-br-2xl bg-sidebar p-4">
 							<div className="flex-1">
 								<h3 className="mb-5 text-xl text-white">Current Order</h3>
 								<div className="flex flex-col space-y-4">
