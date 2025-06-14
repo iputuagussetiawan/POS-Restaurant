@@ -6,14 +6,20 @@ import { useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/trpc/client';
 import {
 	Carousel,
+	CarouselApi,
 	CarouselContent,
 	CarouselItem,
 	CarouselNext,
 	CarouselPrevious,
 } from '@/components/ui/carousel';
+import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 const CategoryList = () => {
 	const [filters, setFilters] = useProductsFilters();
+	const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+	const [carouselCurrentIndex, setCarouselCurrentIndex] = useState(0);
+	const [carouselCount, setCarouselCount] = useState(0);
 	const trpc = useTRPC();
 	const { data } = useQuery(
 		trpc.categories.getMany.queryOptions({
@@ -21,25 +27,53 @@ const CategoryList = () => {
 			search: '',
 		})
 	);
+
+	useEffect(() => {
+		if(!carouselApi){
+			return
+		}
+		setCarouselCount(carouselApi.scrollSnapList().length)
+		setCarouselCurrentIndex(carouselApi.selectedScrollSnap()+1)
+
+		carouselApi.on("select",()=>{
+			setCarouselCurrentIndex(carouselApi.selectedScrollSnap()+1)
+		})
+
+	},[carouselApi])
 	return (
-		<div className="px-12">
+		<div className="relative px-0">
+			{/* left fade */}
+			<div
+				className={cn(
+					'absolute left-12 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-white to-transparent pointer-events-none', 
+					carouselCurrentIndex === 1 && 'hidden'
+				)}
+			/>
 			<Carousel
+				setApi={setCarouselApi}
 				opts={{
 					align: 'start',
 					dragFree: true,
 				}}
-				className="w-full"
+				className="w-full px-12"
 			>
-				<CarouselContent>
+				<CarouselContent className='-ml-3'>
 					{data?.items.map((category) => (
 						<CarouselItem className="basis-auto pl-3" key={category.id}>
 							<CardCategory key={category.id} category={category} />
 						</CarouselItem>
 					))}
 				</CarouselContent>
-				<CarouselPrevious />
-				<CarouselNext />
+				<CarouselPrevious className='left-0 z-20' />
+				<CarouselNext className='right-0 z-20' />
 			</Carousel>
+			{/* right fade */}
+			<div
+				className={cn(
+					'absolute right-12 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-white to-transparent pointer-events-none', 
+					carouselCurrentIndex === carouselCount && 'hidden'
+				)}
+			/>
 		</div>
 	);
 };
