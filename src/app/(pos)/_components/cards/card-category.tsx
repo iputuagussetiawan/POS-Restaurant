@@ -1,25 +1,42 @@
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import React from 'react';
 
 interface CardCategoryProps {
+	onSelect: (value: string) => void;
 	category: {
-    	name: string;
-		imageUrl: string
+		id: string;
+		name: string;
+		imageUrl: string;
 	};
+	selectedValue: string;
 }
 
-const CardCategory = ({category}: CardCategoryProps) => {
+const CardCategory = ({ category, onSelect, selectedValue }: CardCategoryProps) => {
+	const isSelected = selectedValue === category.id;
 	return (
-		<div className="flex group cursor-pointer items-center gap-2 justify-start rounded-4xl border-1 border-green-500 bg-green-100 p-2 transition-all hover:border-green-700 hover:bg-green-700 hover:text-white">
+		<div
+			onClick={() => {
+				onSelect(category.id);
+			}}
+			className={cn(
+				"group flex cursor-pointer items-center justify-start gap-2 rounded-4xl border-1 p-2 transition-all",
+				isSelected
+					? "border-green-700 bg-green-700 text-white"
+					: "border-green-500 text-emerald-600 bg-green-100 hover:border-green-700 hover:bg-green-700 hover:text-white"
+			)}
+		>
 			<Image
 				src={category.imageUrl}
 				alt="category"
 				width={100}
 				height={100}
 				quality={100}
-				className="h-[40px] w-[40px] rounded-full object-cover"
+				className="h-[20px] w-[20px] rounded-full object-cover"
 			/>
-			<h3 className="flex-1 whitespace-nowrap text-sm font-semibold text-emerald-600 group-hover:text-white transition-all ease-in ">{category.name}</h3>
+			<h3 className="flex-1 text-xs font-semibold whitespace-nowrap transition-all ease-in group-hover:text-white">
+				{category.name}
+			</h3>
 		</div>
 	);
 };

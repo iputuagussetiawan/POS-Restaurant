@@ -72,7 +72,12 @@ export const productsRouter = createTRPCRouter({
 			const [total] = await db
 				.select({ count: count() })
 				.from(products)
-				.where(and(search ? ilike(products.name, `%${search}%`) : undefined));
+				.where(
+					and(
+						search ? ilike(products.name, `%${search}%`) : undefined,
+						categoryId ? eq(products.categoryId, categoryId) : undefined
+					)
+				)
 
 			const totalPages = Math.ceil(total.count / pageSize);
 

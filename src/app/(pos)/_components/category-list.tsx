@@ -1,6 +1,5 @@
 'use client';
 import CardCategory from './cards/card-category';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useProductsFilters } from '@/modules/products/hooks/use-products-filter';
 import { useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/trpc/client';
@@ -14,12 +13,17 @@ import {
 } from '@/components/ui/carousel';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { CategoriesGetMany } from '@/modules/productCategories/types';
+import { usePOSFilters } from '@/modules/pos/hooks/use-pos-filter';
+
+
 
 const CategoryList = () => {
-	const [filters, setFilters] = useProductsFilters();
 	const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 	const [carouselCurrentIndex, setCarouselCurrentIndex] = useState(0);
 	const [carouselCount, setCarouselCount] = useState(0);
+
+	const [filters, setFilters] = usePOSFilters();
 	const trpc = useTRPC();
 	const { data } = useQuery(
 		trpc.categories.getMany.queryOptions({
@@ -34,7 +38,6 @@ const CategoryList = () => {
 		}
 		setCarouselCount(carouselApi.scrollSnapList().length)
 		setCarouselCurrentIndex(carouselApi.selectedScrollSnap()+1)
-
 		carouselApi.on("select",()=>{
 			setCarouselCurrentIndex(carouselApi.selectedScrollSnap()+1)
 		})
@@ -60,7 +63,12 @@ const CategoryList = () => {
 				<CarouselContent className='-ml-3'>
 					{data?.items.map((category) => (
 						<CarouselItem className="basis-auto pl-3" key={category.id}>
-							<CardCategory key={category.id} category={category} />
+							<CardCategory 
+								key={category.id} 
+								category={category} 
+								onSelect={(value) => setFilters({ categoryId: value })}
+								selectedValue={filters.categoryId ?? ''}
+							/>
 						</CarouselItem>
 					))}
 				</CarouselContent>
