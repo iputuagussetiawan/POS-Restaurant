@@ -13,14 +13,11 @@ import { TRPCError } from '@trpc/server';
 import { productInsertSchema, productUpdateSchema } from '../schema';
 
 export const productsRouter = createTRPCRouter({
-	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input}) => {
-		const [createdProduct] = await db
-			.insert(products)
-			.values(input)
-			.returning();
+	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input }) => {
+		const [createdProduct] = await db.insert(products).values(input).returning();
 		return createdProduct;
 	}),
-    
+
 	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async () => {
 		const [existingProduct] = await db
 			.select({
@@ -77,7 +74,7 @@ export const productsRouter = createTRPCRouter({
 						search ? ilike(products.name, `%${search}%`) : undefined,
 						categoryId ? eq(products.categoryId, categoryId) : undefined
 					)
-				)
+				);
 
 			const totalPages = Math.ceil(total.count / pageSize);
 
@@ -102,19 +99,17 @@ export const productsRouter = createTRPCRouter({
 		}
 		return updatedProduct;
 	}),
-	remove: protectedProcedure
-		.input(z.object({ id: z.string() }))
-		.mutation(async ({ input }) => {
-			const [removedProduct] = await db
-				.delete(products)
-				.where(and(eq(products.id, input.id)))
-				.returning();
-			if (!removedProduct) {
-				throw new TRPCError({
-					code: 'NOT_FOUND',
-					message: 'Product not found',
-				});
-			}
-			return removedProduct;
-		}),
+	remove: protectedProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+		const [removedProduct] = await db
+			.delete(products)
+			.where(and(eq(products.id, input.id)))
+			.returning();
+		if (!removedProduct) {
+			throw new TRPCError({
+				code: 'NOT_FOUND',
+				message: 'Product not found',
+			});
+		}
+		return removedProduct;
+	}),
 });

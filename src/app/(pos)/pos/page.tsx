@@ -1,6 +1,6 @@
 import HeaderPOS from '../_components/header';
 import FooterPOS from '../_components/footer';
-import PosView from '@/modules/pos/ui/views/pos-view';
+import PosView, { POSViewError, POSViewLoading } from '@/modules/pos/ui/views/pos-view';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -16,11 +16,11 @@ interface Props {
 }
 const POSPage = async ({ searchParams }: Props) => {
 	const session = await auth.api.getSession({
-			headers: await headers(),
-		});
-		if (!session) {
-			redirect('/sign-in');
-		}
+		headers: await headers(),
+	});
+	if (!session) {
+		redirect('/sign-in');
+	}
 	const filters = await loadSearchParams(searchParams);
 	const queryClient = getQueryClient();
 	void queryClient.prefetchQuery(
@@ -31,13 +31,9 @@ const POSPage = async ({ searchParams }: Props) => {
 	return (
 		<>
 			<HydrationBoundary state={dehydrate(queryClient)}>
-				<Suspense fallback={<p>Loading...</p>}>
-					<ErrorBoundary fallback={<p>Error</p>}>
-						<HeaderPOS />
-						<PosView />
-						<FooterPOS />
-					</ErrorBoundary>
-				</Suspense>
+				<HeaderPOS />
+				<PosView />
+				<FooterPOS />
 			</HydrationBoundary>
 		</>
 	);

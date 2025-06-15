@@ -13,6 +13,8 @@ import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { usePOSFilters } from '../../hooks/use-pos-filter';
 import EmptyState from '@/components/empty-state';
+import LoadingState from '@/components/loading-state';
+import ErrorState from '@/components/error-state';
 
 const PosView = () => {
 	const trpc = useTRPC();
@@ -132,3 +134,11 @@ const PosView = () => {
 };
 
 export default PosView;
+
+export const POSViewLoading = () => {
+	return <LoadingState title="Loading Pos" description="Please wait..." />;
+};
+
+export const POSViewError = () => {
+	return <ErrorState title="Error loading POS" description="Please try again later." />;
+};
