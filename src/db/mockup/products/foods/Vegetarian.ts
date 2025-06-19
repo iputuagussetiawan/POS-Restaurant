@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import 'dotenv/config';
-import { products } from '@/db/schema';
+import { productItem, products } from '@/db/schema';
 
 function generateVegetarianId() {
 	const unixTimestamp = Date.now();
@@ -10,58 +10,81 @@ function generateVegetarianId() {
 	return `VEGETARIAN-${unixTimestamp}-${randomSuffix}`;
 }
 
-export const Vegetarian = [
+function generateVegetarianItemId() {
+	const unixTimestamp = Date.now();
+	const randomSuffix = nanoid(4).toUpperCase();
+	return `VEGETARIAN-ITM-${unixTimestamp}-${randomSuffix}`;
+}
+
+const vegetarianDefinitions = [
 	{
-		id: generateVegetarianId(),
 		name: 'Tofu Stir-Fry',
 		imageUrl: 'https://images.pexels.com/photos/1640779/pexels-photo-1640779.jpeg',
+		price: 30000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Lentil Curry',
 		imageUrl: 'https://images.pexels.com/photos/64208/pexels-photo-64208.jpeg',
+		price: 28000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Veggie Burger',
 		imageUrl: 'https://images.pexels.com/photos/1640771/pexels-photo-1640771.jpeg',
+		price: 32000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Chickpea Salad',
 		imageUrl: 'https://images.pexels.com/photos/7045695/pexels-photo-7045695.jpeg',
+		price: 25000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Stuffed Bell Peppers',
 		imageUrl: 'https://images.pexels.com/photos/5946884/pexels-photo-5946884.jpeg',
+		price: 29000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Eggplant Parmesan',
 		imageUrl: 'https://images.pexels.com/photos/5946688/pexels-photo-5946688.jpeg',
+		price: 31000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Vegan Burrito',
 		imageUrl: 'https://images.pexels.com/photos/3738760/pexels-photo-3738760.jpeg',
+		price: 33000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Falafel Wrap',
 		imageUrl: 'https://images.pexels.com/photos/1640770/pexels-photo-1640770.jpeg',
+		price: 27000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Zucchini Noodles',
 		imageUrl: 'https://images.pexels.com/photos/5946852/pexels-photo-5946852.jpeg',
+		price: 26000,
 	},
 	{
-		id: generateVegetarianId(),
 		name: 'Mushroom Risotto',
 		imageUrl: 'https://images.pexels.com/photos/699953/pexels-photo-699953.jpeg',
+		price: 34000,
 	},
 ];
+
+export const Vegetarian = vegetarianDefinitions.map((item) => {
+	const id = generateVegetarianId();
+	return {
+		id,
+		name: item.name,
+		imageUrl: item.imageUrl,
+		items: [
+			{
+				id: generateVegetarianItemId(),
+				productId: id,
+				productItemSizeId: 'md-001',
+				price: item.price,
+			},
+		],
+	};
+});
 
 export async function seedVegetarian(categoryId: string) {
 	try {
@@ -77,6 +100,9 @@ export async function seedVegetarian(categoryId: string) {
 		// Insert products one by one (optional)
 		for (const product of vegeWithCategory) {
 			await db.insert(products).values(product);
+			for (const ProductItemData of product.items) {
+				await db.insert(productItem).values(ProductItemData);
+			}
 		}
 		await pool.end();
 	} catch (err) {

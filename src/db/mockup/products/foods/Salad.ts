@@ -2,66 +2,89 @@ import { nanoid } from 'nanoid';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import 'dotenv/config';
-import { products } from '@/db/schema';
+import { productItem, products } from '@/db/schema';
 
-function generateAppetizersId() {
+function generateSaladId() {
 	const unixTimestamp = Date.now();
 	const randomSuffix = nanoid(4).toUpperCase();
 	return `SALAD-${unixTimestamp}-${randomSuffix}`;
 }
 
-export const Salads = [
+function generateSaladItemId() {
+	const unixTimestamp = Date.now();
+	const randomSuffix = nanoid(4).toUpperCase();
+	return `SALAD-ITM-${unixTimestamp}-${randomSuffix}`;
+}
+
+const saladDefinitions = [
 	{
-		id: generateAppetizersId(),
 		name: 'Caesar Salad',
 		imageUrl: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+		price: 25000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Greek Salad',
 		imageUrl: 'https://images.pexels.com/photos/1435907/pexels-photo-1435907.jpeg',
+		price: 24000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Cobb Salad',
 		imageUrl: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg',
+		price: 27000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Caprese Salad',
 		imageUrl: 'https://images.pexels.com/photos/1435908/pexels-photo-1435908.jpeg',
+		price: 26000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Quinoa Salad',
 		imageUrl: 'https://images.pexels.com/photos/1640776/pexels-photo-1640776.jpeg',
+		price: 28000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Garden Salad',
 		imageUrl: 'https://images.pexels.com/photos/594687/pexels-photo-594687.jpeg',
+		price: 22000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Pasta Salad',
 		imageUrl: 'https://images.pexels.com/photos/1640778/pexels-photo-1640778.jpeg',
+		price: 23000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Tuna Salad',
 		imageUrl: 'https://images.pexels.com/photos/5699517/pexels-photo-5699517.jpeg',
+		price: 29000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Asian Sesame Salad',
 		imageUrl: 'https://images.pexels.com/photos/2773606/pexels-photo-2773606.jpeg',
+		price: 27000,
 	},
 	{
-		id: generateAppetizersId(),
 		name: 'Waldorf Salad',
 		imageUrl: 'https://images.pexels.com/photos/1640782/pexels-photo-1640782.jpeg',
+		price: 26000,
 	},
 ];
+
+export const Salads = saladDefinitions.map((salad) => {
+	const id = generateSaladId();
+	return {
+		id,
+		name: salad.name,
+		imageUrl: salad.imageUrl,
+		items: [
+			{
+				id: generateSaladItemId(),
+				productId: id,
+				productItemSizeId: 'md-001',
+				price: salad.price,
+			},
+		],
+	};
+});
 
 export async function seedSalads(categoryId: string) {
 	try {
@@ -77,6 +100,9 @@ export async function seedSalads(categoryId: string) {
 		// Insert products one by one (optional)
 		for (const product of saladsWithCategory) {
 			await db.insert(products).values(product);
+			for (const ProductItemData of product.items) {
+				await db.insert(productItem).values(ProductItemData);
+			}
 		}
 
 		await pool.end();

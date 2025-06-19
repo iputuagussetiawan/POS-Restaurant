@@ -13,6 +13,9 @@ import { seedSoap } from './mockup/products/foods/Soap';
 import { seedVegetarian } from './mockup/products/foods/Vegetarian';
 import { seedAlcoholic } from './mockup/products/beverage/Alcohol';
 import { seedNonAlcoholic } from './mockup/products/beverage/NoAlcohol';
+import { seedProductSize } from './mockup/product-size/product-size';
+import { seedPizza } from './mockup/products/foods/Pizza';
+import { seedProductItems } from './mockup/product-item/product-item';
 
 async function main() {
 	console.log('🔄 Starting seed process...');
@@ -22,7 +25,10 @@ async function main() {
 		console.log('🧹 Cleaning up...');
 		await db.delete(schema.products); // deletes all products
 		await db.delete(schema.categories); // deletes all categories
-		console.log('🗑️  Products and categories deleted');
+		await db.delete(schema.productItemSize); // deletes all product item size
+		await db.delete(schema.productItem); // deletes all product item size
+		console.log('🗑️  Products, categories, size are deleted');
+			seedProductSize();
 		for (const category of dataCategories) {
 			console.log('📦 Inserting category:', category.name);
 			await db.insert(schema.categories).values(category);
@@ -41,6 +47,7 @@ async function main() {
 					break;
 				case 'Main Courses':
 					seedMainCourses(category.id);
+					seedPizza(category.id);
 					break;
                 case 'Salads':
 					seedSalads(category.id);
@@ -60,8 +67,11 @@ async function main() {
 				default:
 					break;
 			}
+		
 			console.log('✅ Category:', category.name, 'completed');
 		}
+
+		seedProductItems();
 		console.log('✅ Seeding completed!');
 	} catch (err) {
 		console.error('❌ Seeding failed:', err);

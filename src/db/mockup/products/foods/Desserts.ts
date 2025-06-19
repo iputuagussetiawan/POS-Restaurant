@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import 'dotenv/config';
-import { products } from '@/db/schema';
+import { productItem, products } from '@/db/schema';
 
 function generateDessertsId() {
 	const unixTimestamp = Date.now();
@@ -10,58 +10,81 @@ function generateDessertsId() {
 	return `DESSERT-${unixTimestamp}-${randomSuffix}`;
 }
 
-const Desserts = [
+function generateDessertsItemId() {
+	const unixTimestamp = Date.now();
+	const randomSuffix = nanoid(4).toUpperCase();
+	return `DESSERT-ITM-${unixTimestamp}-${randomSuffix}`;
+}
+
+const dessertDefinitions = [
 	{
-		id: generateDessertsId(),
 		name: 'Chocolate Cake',
 		imageUrl: 'https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg',
+		price: 25000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Ice Cream Sundae',
 		imageUrl: 'https://images.pexels.com/photos/4109994/pexels-photo-4109994.jpeg',
+		price: 22000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Tiramisu',
 		imageUrl: 'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg',
+		price: 28000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Cheesecake',
 		imageUrl: 'https://images.pexels.com/photos/7045693/pexels-photo-7045693.jpeg',
+		price: 27000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Brownies',
 		imageUrl: 'https://images.pexels.com/photos/108370/pexels-photo-108370.jpeg',
+		price: 20000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Fruit Tart',
 		imageUrl: 'https://images.pexels.com/photos/3026809/pexels-photo-3026809.jpeg',
+		price: 26000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Crème Brûlée',
 		imageUrl: 'https://images.pexels.com/photos/533325/pexels-photo-533325.jpeg',
+		price: 29000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Donuts',
 		imageUrl: 'https://images.pexels.com/photos/3026806/pexels-photo-3026806.jpeg',
+		price: 18000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Macarons',
 		imageUrl: 'https://images.pexels.com/photos/1571784/pexels-photo-1571784.jpeg',
+		price: 23000,
 	},
 	{
-		id: generateDessertsId(),
 		name: 'Panna Cotta',
 		imageUrl: 'https://images.pexels.com/photos/7045694/pexels-photo-7045694.jpeg',
+		price: 24000,
 	},
 ];
+
+export const Desserts = dessertDefinitions.map((dessert) => {
+	const dessertId = generateDessertsId();
+	return {
+		id: dessertId,
+		name: dessert.name,
+		imageUrl: dessert.imageUrl,
+		items: [
+			{
+				id: generateDessertsItemId(),
+				productId: dessertId,
+				productItemSizeId: 'md-001',
+				price: dessert.price,
+			},
+		],
+	};
+});
 
 export async function seedDesserts(categoryId: string) {
 	try {
@@ -77,6 +100,9 @@ export async function seedDesserts(categoryId: string) {
 		// Insert products one by one (optional)
 		for (const product of DessertsWithCategory) {
 			await db.insert(products).values(product);
+			for (const ProductItemData of product.items) {
+				await db.insert(productItem).values(ProductItemData);
+			}
 		}
 
 		await pool.end();

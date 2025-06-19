@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { pgTable, text, timestamp, boolean, pgEnum, decimal } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, pgEnum, decimal, integer } from 'drizzle-orm/pg-core';
 
 
 export const user = pgTable('user', {
@@ -123,7 +123,7 @@ export const productItem = pgTable('product_items', {
 	productItemSizeId: text('product_item_size_id')
 		.notNull()
 		.references(() => productItemSize.id, { onDelete: 'cascade' }),
-	price: decimal('price').notNull(),
+	price: integer('price').notNull(),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
