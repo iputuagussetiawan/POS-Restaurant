@@ -82,7 +82,7 @@ const CategoryListSuspense = () => {
 								}}
 								onSelect={(value) => setFilters({ categoryId: value })}
 								selectedValue={filters.categoryId ?? ''}
-								className="text-center"
+								className="text-center min-h-[38px] min-w-[80px]"
 							/>
 						</CarouselItem>
 					)}
