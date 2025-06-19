@@ -24,8 +24,6 @@ const PosView = () => {
 			...filters,
 		})
 	);
-	console.log(filters)
-	console.log(data)
 	return (
 		<div>
 			<main className="flex flex-col bg-muted p-4">

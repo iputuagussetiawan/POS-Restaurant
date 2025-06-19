@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { db } from '@/db';
-import { categories, products } from '@/db/schema';
+import { categories, productItem, products } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
 import { and, count, desc, eq, getTableColumns, ilike } from 'drizzle-orm';
 import {
@@ -18,12 +18,29 @@ export const productsRouter = createTRPCRouter({
 		return createdProduct;
 	}),
 
-	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async () => {
+	getProductItems: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.query(async ({ input }) => {
+			const data = await db
+				.select({
+					...getTableColumns(productItem),
+				})
+				.from(productItem)
+				.where(and(eq(productItem.productId, input.id)));
+			return {
+				data
+			};
+		}),
+
+	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
 		const [existingProduct] = await db
 			.select({
 				...getTableColumns(products),
+					categories: categories,
 			})
-			.from(products);
+			.from(products)
+			.innerJoin(categories, eq(products.categoryId, categories.id))
+			.where(and(eq(products.id, input.id)));
 
 		if (!existingProduct) {
 			throw new TRPCError({
