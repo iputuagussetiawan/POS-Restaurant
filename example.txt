@@ -1,0 +1,13 @@
+DATABASE_URL=""
+DATABASE_LOCAL="postgresql://postgres:bfcfdna3@localhost:5432/db_POS?schema=public"
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+BETTER_AUTH_SECRET="6uUO2PX4PjZhptRwTSd2aYnTkgHrXTqq"
+BETTER_AUTH_URL="http://localhost:3000"
+
