@@ -32,8 +32,10 @@ export const productsRouter = createTRPCRouter({
 		const [existingProduct] = await db
 			.select({
 				...getTableColumns(products),
+				categories,
 			})
 			.from(products)
+			.innerJoin(categories, eq(products.categoryId, categories.id))
 			.where(eq(products.id, input.id));
 
 		if (!existingProduct) {

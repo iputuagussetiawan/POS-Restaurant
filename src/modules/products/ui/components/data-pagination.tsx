@@ -84,7 +84,7 @@ const DataPagination = ({
 
 			{/* right — page navigation */}
 			{totalPages > 1 && (
-				<Pagination className="mx-0 ml-auto w-auto justify-end">
+				<Pagination className="mx-0 w-auto justify-start sm:ml-auto sm:justify-end">
 					<PaginationContent>
 						<PaginationItem>
 							<PaginationPrevious

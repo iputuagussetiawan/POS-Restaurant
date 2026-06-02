@@ -16,17 +16,17 @@ const DashboardNavbar = () => {
 				setCommandOpen((open) => !open);
 			}
 		};
-
 		document.addEventListener('keydown', down);
 		return () => document.removeEventListener('keydown', down);
 	}, []);
+
 	return (
 		<>
 			<DashboardCommand open={commandOpen} setOpen={setCommandOpen} />
 			<nav className="sticky top-0 z-10 flex items-center gap-x-2 border-b bg-background/70 px-4 py-3 backdrop-blur-md backdrop-saturate-150">
 				<Button
-					className="size-9 cursor-pointer"
-					variant={'outline'}
+					className="size-9 shrink-0 cursor-pointer"
+					variant="outline"
 					onClick={toggleSidebar}
 				>
 					{state === 'collapsed' || isMobile ? (
@@ -37,14 +37,14 @@ const DashboardNavbar = () => {
 				</Button>
 				<Button
 					onClick={() => setCommandOpen((open) => !open)}
-					className="h-9 w-[240px] cursor-pointer justify-start font-normal text-muted-foreground hover:text-muted-foreground"
-					size={'sm'}
-					variant={'outline'}
+					className="h-9 flex-1 cursor-pointer justify-start font-normal text-muted-foreground hover:text-muted-foreground sm:w-[240px] sm:flex-none"
+					size="sm"
+					variant="outline"
 				>
-					<SearchIcon className="size-4" />
-					Search...
-					<kbd className="pointer-events-none ml-auto inline-flex h-5 gap-1 rounded border border-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
-						<span className="text-xs">&#8984;</span>
+					<SearchIcon className="size-4 shrink-0" />
+					<span className="truncate">Search...</span>
+					<kbd className="pointer-events-none ml-auto hidden h-5 shrink-0 items-center gap-1 rounded border border-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none sm:inline-flex">
+						<span className="text-xs">&#8984;K</span>
 					</kbd>
 				</Button>
 			</nav>

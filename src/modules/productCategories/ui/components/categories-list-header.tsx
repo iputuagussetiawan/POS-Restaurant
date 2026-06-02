@@ -24,18 +24,14 @@ const CategoriesListHeader = () => {
 			<NewAgentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
 			{/* title bar — scrolls away */}
-			<div className="border-b bg-background px-4 py-5 md:px-8">
-				<div className="flex items-center justify-between">
-					<div className="space-y-0.5">
-						<h1 className="text-2xl font-bold tracking-tight">Product Categories</h1>
-						<p className="text-sm text-muted-foreground">
-							Organise your menu by grouping products into categories.
-						</p>
-					</div>
-					<Button onClick={() => setIsDialogOpen(true)} className="gap-x-2 shadow-sm">
-						<PlusIcon className="size-4" />
-						Add Category
-					</Button>
+			<div className="border-b bg-background px-4 py-4 md:px-8 md:py-5">
+				<div className="space-y-0.5">
+					<h1 className="text-xl font-bold tracking-tight md:text-2xl">
+						Product Categories
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						Organise your menu by grouping products into categories.
+					</p>
 				</div>
 			</div>
 

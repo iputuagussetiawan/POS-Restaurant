@@ -38,18 +38,14 @@ const ProductListHeader = () => {
 			<NewProductDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
 			{/* title bar — scrolls away */}
-			<div className="border-b bg-background px-4 py-5 md:px-8">
+			<div className="border-b bg-background px-4 py-4 md:px-8 md:py-5">
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
-						<h1 className="text-2xl font-bold tracking-tight">Products</h1>
+						<h1 className="text-xl font-bold tracking-tight md:text-2xl">Products</h1>
 						<p className="text-sm text-muted-foreground">
 							Manage your menu items, prices and availability.
 						</p>
 					</div>
-					<Button onClick={() => setIsDialogOpen(true)} className="gap-x-2 shadow-sm">
-						<PlusIcon className="size-4" />
-						Add Product
-					</Button>
 				</div>
 			</div>
 

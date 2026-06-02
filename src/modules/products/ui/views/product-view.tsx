@@ -26,25 +26,30 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import NewProductDialog from '../components/new-product-dialog';
+import { useState } from 'react';
+import { PlusIcon } from 'lucide-react';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 export const ProductView = () => {
 	const router = useRouter();
 	const [filters, setFilters] = useProductsFilters();
+	const [dialogOpen, setDialogOpen] = useState(false);
 	const trpc = useTRPC();
 	const { data } = useSuspenseQuery(trpc.products.getMany.queryOptions({ ...filters }));
 
 	return (
-		<div className="flex flex-col gap-y-4 px-4 py-4 md:px-8">
-			<div className="flex items-center justify-between gap-x-4">
+		<div className="flex flex-col gap-y-4 px-4 py-4 pb-24 md:px-8">
+			<NewProductDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+			<div className="flex flex-wrap items-center justify-between gap-2">
 				<p className="text-sm text-muted-foreground">
 					{data.total === 0
 						? 'No products found'
 						: `${data.total} product${data.total === 1 ? '' : 's'} found`}
 				</p>
 				<div className="flex items-center gap-x-2">
-					<span className="text-sm whitespace-nowrap text-muted-foreground">
+					<span className="hidden text-sm text-muted-foreground sm:inline">
 						Rows per page
 					</span>
 					<Select
@@ -87,6 +92,27 @@ export const ProductView = () => {
 					/>
 				</>
 			)}
+
+			{/* FAB */}
+			<div
+				style={{
+					position: 'fixed',
+					bottom: '2rem',
+					left: '50%',
+					transform: 'translateX(-50%)',
+					zIndex: 40,
+				}}
+			>
+				<button
+					onClick={() => setDialogOpen(true)}
+					className="rgb-glow relative flex w-fit items-center gap-x-2.5 rounded-full py-3 pr-5 pl-3 text-sm font-semibold text-white shadow-[0_8px_40px_rgba(14,165,233,0.35),0_4px_16px_rgba(124,58,237,0.25)]"
+				>
+					<span className="flex size-7 items-center justify-center rounded-full bg-white/20">
+						<PlusIcon className="size-4" />
+					</span>
+					Add Product
+				</button>
+			</div>
 		</div>
 	);
 };
