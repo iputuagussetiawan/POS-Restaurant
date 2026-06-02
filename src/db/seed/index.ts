@@ -4,7 +4,6 @@ import { Pool } from 'pg';
 import { nanoid } from 'nanoid';
 import { hashPassword } from 'better-auth/crypto';
 import { categories, products, user, account } from '../schema';
-
 import { categoriesData } from './data/categories';
 import { usersData } from './data/users';
 import { appetizers } from './data/products/appetizers';
@@ -18,7 +17,18 @@ import { vegetarian } from './data/products/vegetarian';
 import { seafood } from './data/products/seafood';
 import { kidsMenu } from './data/products/kids-menu';
 
-const CATEGORY_PRODUCTS: Record<string, { name: string; imageUrl: string }[]> = {
+const toSlug = (name: string) =>
+	name
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9\s-]/g, '')
+		.replace(/\s+/g, '-')
+		.replace(/-+/g, '-');
+
+const CATEGORY_PRODUCTS: Record<
+	string,
+	{ name: string; imageUrl: string; description?: string; price?: number }[]
+> = {
 	Appetizers: appetizers,
 	'Main Courses': mainCourses,
 	Desserts: desserts,
@@ -42,6 +52,8 @@ async function main() {
 		console.log('\n👤 Seeding users...');
 		await db.delete(account);
 		await db.delete(user);
+
+		let adminUserId = '';
 
 		for (const u of usersData) {
 			const userId = nanoid();
@@ -68,6 +80,8 @@ async function main() {
 				updatedAt: now,
 			});
 
+			if (u.role === 'admin') adminUserId = userId;
+
 			console.log(`  ✅ ${u.role.padEnd(9)} — ${u.email}  (pw: ${u.password})`);
 		}
 
@@ -76,21 +90,52 @@ async function main() {
 		await db.delete(products);
 		await db.delete(categories);
 
-		for (const categoryData of categoriesData) {
+		// base date: 30 days ago, each category 3 days apart
+		const BASE_DATE = new Date();
+		BASE_DATE.setDate(BASE_DATE.getDate() - 30);
+
+		for (let i = 0; i < categoriesData.length; i++) {
+			const categoryData = categoriesData[i];
 			const categoryId = nanoid();
 			console.log(`  📦 ${categoryData.name}`);
 
-			await db.insert(categories).values({ id: categoryId, ...categoryData });
+			const categoryCreatedAt = new Date(BASE_DATE);
+			categoryCreatedAt.setDate(categoryCreatedAt.getDate() + i * 3);
+			const categoryUpdatedAt = new Date(categoryCreatedAt);
+			categoryUpdatedAt.setHours(categoryUpdatedAt.getHours() + 1);
+
+			await db.insert(categories).values({
+				id: categoryId,
+				...categoryData,
+				createdBy: adminUserId,
+				createdAt: categoryCreatedAt,
+				updatedAt: categoryUpdatedAt,
+			});
 
 			const productItems = CATEGORY_PRODUCTS[categoryData.name];
 			if (productItems?.length) {
 				await db.insert(products).values(
-					productItems.map((p) => ({
-						id: nanoid(),
-						categoryId,
-						name: p.name,
-						imageUrl: p.imageUrl,
-					}))
+					productItems.map((p, j) => {
+						// each product 2 hours after the category, then 30 min apart
+						const productCreatedAt = new Date(categoryCreatedAt);
+						productCreatedAt.setMinutes(productCreatedAt.getMinutes() + 120 + j * 30);
+						const productUpdatedAt = new Date(productCreatedAt);
+						productUpdatedAt.setMinutes(productUpdatedAt.getMinutes() + 10);
+						const basePrice = p.price ?? 5 + Math.floor(j * 1.5 + i * 2);
+						return {
+							id: nanoid(),
+							categoryId,
+							createdBy: adminUserId,
+							name: p.name,
+							slug: toSlug(p.name),
+							description: p.description ?? null,
+							price: basePrice.toFixed(2),
+							isAvailable: true,
+							imageUrl: p.imageUrl,
+							createdAt: productCreatedAt,
+							updatedAt: productUpdatedAt,
+						};
+					})
 				);
 				console.log(`     ↳ ${productItems.length} products inserted`);
 			}

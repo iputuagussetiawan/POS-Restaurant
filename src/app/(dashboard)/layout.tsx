@@ -28,7 +28,14 @@ const Layout = async ({ children }: Props) => {
 			<DashboardSidebar />
 			<main className="flex h-screen w-screen flex-col bg-muted">
 				<DashboardNavbar />
-				{children}
+				<div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+					{children}
+					<footer className="mt-auto border-t bg-background px-4 py-3 md:px-8">
+						<p className="text-xs text-muted-foreground">
+							© {new Date().getFullYear()} Food Order. All rights reserved.
+						</p>
+					</footer>
+				</div>
 			</main>
 		</SidebarProvider>
 	);

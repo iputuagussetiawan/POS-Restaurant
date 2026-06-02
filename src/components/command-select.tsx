@@ -46,7 +46,7 @@ export const CommandSelect = ({
 				type="button"
 				variant={'outline'}
 				className={cn(
-					'h-9 justify-between px-2 font-bold',
+					'h-9 w-full justify-between bg-white px-3 font-normal shadow-none',
 					!selectedOption && 'text-muted-foreground',
 					className
 				)}

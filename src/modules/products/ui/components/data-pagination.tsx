@@ -39,7 +39,7 @@ const DataPagination = ({ page, total, totalPages, pageSize, onPageChange }: Pro
 			</p>
 
 			{totalPages > 1 && (
-				<Pagination className="w-auto">
+				<Pagination className="mx-0 ml-auto w-auto justify-end">
 					<PaginationContent>
 						<PaginationItem>
 							<PaginationPrevious

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { categories, products } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { and, count, desc, eq, getTableColumns, ilike } from 'drizzle-orm';
+import { and, between, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,
@@ -11,12 +11,19 @@ import {
 } from '../../../../constants';
 import { TRPCError } from '@trpc/server';
 import { productInsertSchema, productUpdateSchema } from '../schema';
+import { toSlug } from '@/lib/utils';
 
 export const productsRouter = createTRPCRouter({
 	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input, ctx }) => {
+		const slug = input.slug ?? toSlug(input.name);
 		const [createdProduct] = await db
 			.insert(products)
-			.values({ ...input, createdBy: ctx.auth.user.id })
+			.values({
+				...input,
+				slug,
+				price: String(input.price),
+				createdBy: ctx.auth.user.id,
+			})
 			.returning();
 		return createdProduct;
 	}),
@@ -48,11 +55,30 @@ export const productsRouter = createTRPCRouter({
 					.max(MAX_PAGE_SIZE)
 					.default(DEFAULT_PAGE_SIZE),
 				search: z.string().nullish(),
-				categoryId: z.string().nullish(),
+				categorySlugs: z.array(z.string()).nullish(),
+				minPrice: z.number().nullish(),
+				maxPrice: z.number().nullish(),
 			})
 		)
 		.query(async ({ input }) => {
-			const { search, page, pageSize, categoryId } = input;
+			const { search, page, pageSize, categorySlugs, minPrice, maxPrice } = input;
+			const categoryFilter =
+				categorySlugs && categorySlugs.length > 0
+					? inArray(categories.slug, categorySlugs)
+					: undefined;
+			const priceFilter =
+				minPrice != null && maxPrice != null
+					? between(
+							sql`CAST(${products.price} AS numeric)`,
+							sql`${minPrice}`,
+							sql`${maxPrice}`
+						)
+					: undefined;
+			const whereClause = and(
+				search ? ilike(products.name, `%${search}%`) : undefined,
+				categoryFilter,
+				priceFilter
+			);
 			const data = await db
 				.select({
 					...getTableColumns(products),
@@ -60,12 +86,7 @@ export const productsRouter = createTRPCRouter({
 				})
 				.from(products)
 				.innerJoin(categories, eq(products.categoryId, categories.id))
-				.where(
-					and(
-						search ? ilike(products.name, `%${search}%`) : undefined,
-						categoryId ? eq(products.categoryId, categoryId) : undefined
-					)
-				)
+				.where(whereClause)
 				.orderBy(desc(products.createdAt), desc(products.id))
 				.limit(pageSize)
 				.offset((page - 1) * pageSize);
@@ -73,12 +94,8 @@ export const productsRouter = createTRPCRouter({
 			const [total] = await db
 				.select({ count: count() })
 				.from(products)
-				.where(
-					and(
-						search ? ilike(products.name, `%${search}%`) : undefined,
-						categoryId ? eq(products.categoryId, categoryId) : undefined
-					)
-				);
+				.innerJoin(categories, eq(products.categoryId, categories.id))
+				.where(whereClause);
 
 			const totalPages = Math.ceil(total.count / pageSize);
 
@@ -90,9 +107,10 @@ export const productsRouter = createTRPCRouter({
 		}),
 
 	update: protectedProcedure.input(productUpdateSchema).mutation(async ({ input, ctx }) => {
+		const slug = input.slug ?? toSlug(input.name);
 		const [updatedProduct] = await db
 			.update(products)
-			.set(input)
+			.set({ ...input, slug, price: String(input.price) })
 			.where(and(eq(products.id, input.id), eq(products.createdBy, ctx.auth.user.id)))
 			.returning();
 		if (!updatedProduct) {

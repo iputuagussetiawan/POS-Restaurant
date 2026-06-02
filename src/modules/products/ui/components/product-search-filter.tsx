@@ -1,20 +1,35 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { SearchIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import {useProductsFilters } from '../../hooks/use-products-filter';
+import { useProductsFilters } from '../../hooks/use-products-filter';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export const ProductSearchFilter = () => {
-    const [filters, setFilters] = useProductsFilters();
+	const [filters, setFilters] = useProductsFilters();
+	const [inputValue, setInputValue] = useState(filters.search ?? '');
+	const debouncedValue = useDebounce(inputValue, 400);
 
-    return (
-        <div className="relative">
-            <Input
-                className="h-9 w-[200px] bg-white pl-7"
-                type="text"
-                placeholder="Filter by name..."
-                value={filters.search}
-                onChange={(e) => setFilters({ search: e.target.value })}
-            />
-            <SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
-        </div>
-    );
+	useEffect(() => {
+		setFilters({ search: debouncedValue, page: 1 });
+	}, [debouncedValue]);
+
+	// sync back if filters cleared externally (e.g. "Clear filters" button)
+	useEffect(() => {
+		if (!filters.search) setInputValue('');
+	}, [filters.search]);
+
+	return (
+		<div className="relative">
+			<Input
+				className="h-8 w-[220px] bg-background pl-7 text-sm"
+				type="text"
+				placeholder="Filter by name..."
+				value={inputValue}
+				onChange={(e) => setInputValue(e.target.value)}
+			/>
+			<SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
+		</div>
+	);
 };

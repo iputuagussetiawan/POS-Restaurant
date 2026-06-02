@@ -11,12 +11,14 @@ import {
 } from '../../../../constants';
 import { TRPCError } from '@trpc/server';
 import { categoriesInsertSchema, categoriesUpdateSchema } from '../schema';
+import { toSlug } from '@/lib/utils';
 
 export const categoriesRouter = createTRPCRouter({
 	create: protectedProcedure.input(categoriesInsertSchema).mutation(async ({ input, ctx }) => {
+		const slug = input.slug ?? toSlug(input.name);
 		const [createdCategory] = await db
 			.insert(categories)
-			.values({ ...input, createdBy: ctx.auth.user.id })
+			.values({ ...input, slug, createdBy: ctx.auth.user.id })
 			.returning();
 		return createdCategory;
 	}),
@@ -77,9 +79,10 @@ export const categoriesRouter = createTRPCRouter({
 		}),
 
 	update: protectedProcedure.input(categoriesUpdateSchema).mutation(async ({ input, ctx }) => {
+		const slug = input.slug ?? toSlug(input.name);
 		const [updatedCategory] = await db
 			.update(categories)
-			.set(input)
+			.set({ ...input, slug })
 			.where(and(eq(categories.id, input.id), eq(categories.createdBy, ctx.auth.user.id)))
 			.returning();
 		if (!updatedCategory) {
