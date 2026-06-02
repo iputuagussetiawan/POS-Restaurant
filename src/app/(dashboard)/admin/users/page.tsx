@@ -4,7 +4,8 @@ import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import React from 'react';
+import React, { Suspense } from 'react';
+import { UsersViewLoading } from '@/modules/users/ui/views/users-view';
 
 const AdminUsersPage = async () => {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -14,11 +15,13 @@ const AdminUsersPage = async () => {
 	}
 
 	const queryClient = getQueryClient();
-	void queryClient.prefetchQuery(trpc.users.getAll.queryOptions());
+	void queryClient.prefetchQuery(trpc.users.getAll.queryOptions({}));
 
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>
-			<UsersView />
+			<Suspense fallback={<UsersViewLoading />}>
+				<UsersView />
+			</Suspense>
 		</HydrationBoundary>
 	);
 };

@@ -13,7 +13,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/rich-text-editor';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
@@ -252,11 +252,10 @@ const CategoriesForm = ({ onSuccess, onCancel, initialValues }: CategoriesFormPr
 						<FormItem>
 							<FormLabel>Description</FormLabel>
 							<FormControl>
-								<Textarea
-									{...field}
+								<RichTextEditor
+									value={field.value ?? ''}
+									onChange={field.onChange}
 									placeholder="e.g. Fresh seafood dishes from the ocean"
-									className="resize-none"
-									rows={2}
 								/>
 							</FormControl>
 							<FormMessage />

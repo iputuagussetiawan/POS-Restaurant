@@ -1,7 +1,17 @@
 'use client';
+
 import { useTRPC } from '@/trpc/client';
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import React, { Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import ErrorState from '@/components/error-state';
+import EmptyState from '@/components/empty-state';
+import LoadingState from '@/components/loading-state';
+import { DataTable } from '@/components/data-table';
+import { columns } from '../components/columns';
+import UsersListHeader from '../components/users-list-header';
+import { useUsersFilters } from '../../hooks/use-users-filter';
+import DataPagination from '@/modules/products/ui/components/data-pagination';
 import {
 	Select,
 	SelectContent,
@@ -9,103 +19,138 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import React, { Suspense } from 'react';
-import LoadingState from '@/components/loading-state';
+import { DEFAULT_PAGE_SIZE } from '../../../../../constants';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
 
-type Role = 'admin' | 'manager' | 'cashier' | 'pending';
-
-const ROLES: Role[] = ['admin', 'manager', 'cashier', 'pending'];
-
-const ROLE_COLORS: Record<Role, string> = {
-	admin: 'bg-red-100 text-red-700',
-	manager: 'bg-blue-100 text-blue-700',
-	cashier: 'bg-green-100 text-green-700',
-	pending: 'bg-yellow-100 text-yellow-700',
-};
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 const UsersTable = () => {
 	const trpc = useTRPC();
-	const queryClient = useQueryClient();
-	const { data: users } = useSuspenseQuery(trpc.users.getAll.queryOptions());
+	const [filters, setFilters] = useUsersFilters();
 
-	const setRole = useMutation(
-		trpc.users.setRole.mutationOptions({
-			onSuccess: () => {
-				queryClient.invalidateQueries(trpc.users.getAll.queryOptions());
-				toast.success('Role updated');
-			},
-			onError: (err) => toast.error(err.message),
+	const { data } = useSuspenseQuery(
+		trpc.users.getAll.queryOptions({
+			page: filters.page,
+			pageSize: filters.pageSize,
+			search: filters.search || undefined,
+			role: filters.role ?? undefined,
+			status: filters.status ?? undefined,
 		})
 	);
 
 	return (
-		<div className="overflow-hidden rounded-lg border bg-white">
-			<table className="w-full text-sm">
-				<thead className="border-b bg-muted/40 text-left">
-					<tr>
-						<th className="px-4 py-3 font-medium">Name</th>
-						<th className="px-4 py-3 font-medium">Email</th>
-						<th className="px-4 py-3 font-medium">Role</th>
-						<th className="px-4 py-3 font-medium">Joined</th>
-					</tr>
-				</thead>
-				<tbody>
-					{users.map((u) => {
-						const currentRole = (u.role ?? 'pending') as Role;
-						return (
-							<tr key={u.id} className="border-b last:border-0 hover:bg-muted/20">
-								<td className="px-4 py-3 font-medium">{u.name}</td>
-								<td className="px-4 py-3 text-muted-foreground">{u.email}</td>
-								<td className="px-4 py-3">
-									<Select
-										value={currentRole}
-										onValueChange={(role) =>
-											setRole.mutate({ userId: u.id, role: role as Role })
-										}
-									>
-										<SelectTrigger className="h-8 w-36">
-											<SelectValue>
-												<Badge
-													className={`capitalize ${ROLE_COLORS[currentRole]}`}
-													variant="outline"
-												>
-													{currentRole}
-												</Badge>
-											</SelectValue>
-										</SelectTrigger>
-										<SelectContent>
-											{ROLES.map((r) => (
-												<SelectItem key={r} value={r}>
-													<span className="capitalize">{r}</span>
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</td>
-								<td className="px-4 py-3 text-muted-foreground">
-									{new Date(u.createdAt).toLocaleDateString()}
-								</td>
-							</tr>
-						);
-					})}
-				</tbody>
-			</table>
+		<div className="flex flex-col gap-y-4 px-4 py-4 pb-8 md:px-8">
+			<div className="flex flex-wrap items-center justify-between gap-2">
+				<p className="text-sm text-muted-foreground">
+					{data.total === 0
+						? 'No users found'
+						: `${data.total} user${data.total === 1 ? '' : 's'} found`}
+				</p>
+				<div className="flex items-center gap-x-2">
+					<span className="hidden text-sm text-muted-foreground sm:inline">
+						Rows per page
+					</span>
+					<Select
+						value={String(filters.pageSize ?? DEFAULT_PAGE_SIZE)}
+						onValueChange={(v) => setFilters({ pageSize: Number(v), page: 1 })}
+					>
+						<SelectTrigger size="sm" className="w-20 font-medium">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent align="end">
+							{PAGE_SIZE_OPTIONS.map((s) => (
+								<SelectItem key={s} value={String(s)}>
+									{s}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+
+			{data.items.length === 0 ? (
+				<EmptyState title="No users found" description="Try adjusting your search." />
+			) : (
+				<>
+					<DataTable data={data.items} columns={columns} />
+					<DataPagination
+						page={filters.page}
+						total={data.total}
+						totalPages={data.totalPages}
+						pageSize={filters.pageSize ?? DEFAULT_PAGE_SIZE}
+						onPageChange={(page) => setFilters({ page })}
+						onPageSizeChange={(pageSize) => setFilters({ pageSize, page: 1 })}
+					/>
+				</>
+			)}
 		</div>
 	);
 };
 
+export const UsersViewLoading = () => (
+	<div className="flex flex-col gap-y-4 px-4 py-4 md:px-8">
+		<Skeleton className="h-4 w-36" />
+		<div className="overflow-hidden rounded-lg border bg-white">
+			<Table>
+				<TableHeader>
+					<TableRow className="bg-muted/40 hover:bg-muted/40">
+						{['Name', 'Role', 'Status', 'Joined', ''].map((h) => (
+							<TableHead key={h} className="px-4 py-3">
+								<Skeleton className="h-4 w-20" />
+							</TableHead>
+						))}
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{Array.from({ length: 8 }).map((_, i) => (
+						<TableRow key={i}>
+							<TableCell className="px-4 py-3">
+								<div className="flex flex-col gap-y-1">
+									<Skeleton className="h-4 w-32" />
+									<Skeleton className="h-3 w-44" />
+								</div>
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<Skeleton className="h-6 w-24 rounded-full" />
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<Skeleton className="h-5 w-16 rounded-full" />
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<Skeleton className="h-4 w-24" />
+							</TableCell>
+							<TableCell className="px-4 py-3">
+								<Skeleton className="h-8 w-8 rounded-md" />
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</div>
+	</div>
+);
+
 const UsersView = () => {
 	return (
-		<div className="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
-			<div className="flex items-center justify-between">
-				<h5 className="text-xl font-medium">User Management</h5>
-			</div>
-			<Suspense
-				fallback={<LoadingState title="Loading users" description="Please wait..." />}
+		<div className="flex flex-1 flex-col">
+			<UsersListHeader />
+			<ErrorBoundary
+				fallback={
+					<ErrorState title="Error loading users" description="Please try again later." />
+				}
 			>
-				<UsersTable />
-			</Suspense>
+				<Suspense fallback={<UsersViewLoading />}>
+					<UsersTable />
+				</Suspense>
+			</ErrorBoundary>
 		</div>
 	);
 };
