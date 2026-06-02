@@ -12,7 +12,7 @@
 		"prepare": "husky",
 		"cln": "npx prettier . --write",
 		"dev:webhooks": "ngrok http --url=pony-poetic-owl.ngrok-free.app 3000",
-		"seed": "node -r esbuild-register src/db/seed.ts"
+		"seed": "node -r esbuild-register src/db/seed/index.ts"
 	},
 	"lint-staged": {
 		"**/*": "prettier --write --ignore-unknown"

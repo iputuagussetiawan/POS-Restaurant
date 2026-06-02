@@ -5,12 +5,10 @@ import { useTRPC } from '@/trpc/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import GenerateAvatar from '@/components/generate-avatar';
-import { Badge } from '@/components/ui/badge';
-import { VideoIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { UseConfirm } from '@/hooks/use-confirm';
-import UpdateAgentDialog from '../components/update-categories-dialog';
+import UpdateCategoriesDialog from '../components/update-categories-dialog';
 import CategoriesIdViewHeader from '../components/categories-id-view-header';
 
 interface Props {
@@ -24,13 +22,11 @@ const CategoriesIdView = ({ categoryId }: Props) => {
 	const trpc = useTRPC();
 	const { data } = useSuspenseQuery(trpc.categories.getOne.queryOptions({ id: categoryId }));
 
-	const removeAgent = useMutation(
-		trpc.agents.remove.mutationOptions({
+	const removeCategory = useMutation(
+		trpc.categories.remove.mutationOptions({
 			onSuccess: async () => {
-				await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
-				//TODO - Invalidate free tier usage
-
-				router.push('/agents');
+				await queryClient.invalidateQueries(trpc.categories.getMany.queryOptions({}));
+				router.push('/categories');
 			},
 			onError: (error) => {
 				toast.error(error.message);
@@ -40,18 +36,19 @@ const CategoriesIdView = ({ categoryId }: Props) => {
 
 	const [RemoveConfirmation, confirmRemove] = UseConfirm(
 		'Are you sure?',
-		`The following action will remove associated product.`
+		`This will permanently delete the category and all associated products.`
 	);
 
-	const handleRemoveAgent = async () => {
+	const handleRemoveCategory = async () => {
 		const ok = await confirmRemove();
 		if (!ok) return;
-		await removeAgent.mutateAsync({ id: categoryId });
+		await removeCategory.mutateAsync({ id: categoryId });
 	};
+
 	return (
 		<>
 			<RemoveConfirmation />
-			<UpdateAgentDialog
+			<UpdateCategoriesDialog
 				open={updateCategoriesDialogOpen}
 				onOpenChange={setUpdateCategoriesDialogOpen}
 				initialValues={data}
@@ -61,7 +58,7 @@ const CategoriesIdView = ({ categoryId }: Props) => {
 					categoryId={categoryId}
 					categoryName={data.name}
 					onEdit={() => setUpdateCategoriesDialogOpen(true)}
-					onRemove={handleRemoveAgent}
+					onRemove={handleRemoveCategory}
 				/>
 				<div className="rounded-lg border bg-white">
 					<div className="col-span-5 flex flex-col gap-y-5 px-4 py-5">
@@ -73,7 +70,6 @@ const CategoriesIdView = ({ categoryId }: Props) => {
 							/>
 							<h2 className="text-2xl font-medium">{data.name}</h2>
 						</div>
-						
 						<div className="flex flex-col gap-y-4">
 							<p className="text-lg font-medium">Description</p>
 							<p className="text-neutral-800">{data.description}</p>

@@ -1,31 +1,35 @@
 import ResponsiveDialog from '@/components/responsive-dialog';
 import React from 'react';
-import AgentForm from './categories-form';
-import { AgentGetOne } from '../../types';
+import CategoriesForm from './categories-form';
+import { CategoriesGetOne } from '../../types';
 
-interface UpdateAgentDialogProp {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    initialValues?: AgentGetOne;
+interface UpdateCategoriesDialogProp {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	initialValues?: CategoriesGetOne;
 }
 
-const UpdateAgentDialog = ({ open, onOpenChange, initialValues }: UpdateAgentDialogProp) => {
-    return (
-        <div>
-            <ResponsiveDialog
-                title="Edit Agent"
-                description="Edit the agent detail"
-                open={open}
-                onOpenChange={onOpenChange}
-            >
-                <AgentForm
-                    onSuccess={() => onOpenChange(false)}
-                    onCancel={() => onOpenChange(false)}
-                    initialValues={initialValues}
-                />
-            </ResponsiveDialog>
-        </div>
-    );
+const UpdateCategoriesDialog = ({
+	open,
+	onOpenChange,
+	initialValues,
+}: UpdateCategoriesDialogProp) => {
+	return (
+		<div>
+			<ResponsiveDialog
+				title="Edit Category"
+				description="Edit the category detail"
+				open={open}
+				onOpenChange={onOpenChange}
+			>
+				<CategoriesForm
+					onSuccess={() => onOpenChange(false)}
+					onCancel={() => onOpenChange(false)}
+					initialValues={initialValues}
+				/>
+			</ResponsiveDialog>
+		</div>
+	);
 };
 
-export default UpdateAgentDialog;
+export default UpdateCategoriesDialog;

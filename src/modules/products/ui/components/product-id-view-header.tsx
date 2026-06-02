@@ -15,14 +15,15 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+
 interface Props {
-	agentId: string;
-	agentName: string;
+	productId: string;
+	productName: string;
 	onEdit: () => void;
 	onRemove: () => void;
 }
 
-const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Props) => {
+const ProductIdViewHeader = ({ productId, productName, onEdit, onRemove }: Props) => {
 	return (
 		<div className="flex items-center justify-between">
 			<Breadcrumb>
@@ -32,7 +33,7 @@ const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Props) => {
 							asChild
 							className="text-sm font-medium text-muted-foreground"
 						>
-							<Link href={'/agents'}>My Agents</Link>
+							<Link href="/products">My Products</Link>
 						</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator className="[&>svg:size-4] text-sm font-medium text-foreground">
@@ -40,7 +41,7 @@ const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Props) => {
 					</BreadcrumbSeparator>
 					<BreadcrumbItem>
 						<BreadcrumbLink asChild className="text-sm font-medium text-foreground">
-							<Link href={`/agents/${agentId}`}>{agentName}</Link>
+							<Link href={`/products/${productId}`}>{productName}</Link>
 						</BreadcrumbLink>
 					</BreadcrumbItem>
 				</BreadcrumbList>
@@ -48,7 +49,7 @@ const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Props) => {
 
 			<DropdownMenu modal={false}>
 				<DropdownMenuTrigger asChild>
-					<Button variant={'ghost'} size={'sm'}>
+					<Button variant="ghost" size="sm">
 						<MoreVerticalIcon className="h-4 w-4" />
 					</Button>
 				</DropdownMenuTrigger>
@@ -65,4 +66,4 @@ const AgentIdViewHeader = ({ agentId, agentName, onEdit, onRemove }: Props) => {
 	);
 };
 
-export default AgentIdViewHeader;
+export default ProductIdViewHeader;

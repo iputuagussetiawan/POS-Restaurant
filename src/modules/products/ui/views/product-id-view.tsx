@@ -4,33 +4,29 @@ import LoadingState from '@/components/loading-state';
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
-import AgentIdViewHeader from '../components/product-id-view-header';
+import ProductIdViewHeader from '../components/product-id-view-header';
 import GenerateAvatar from '@/components/generate-avatar';
-import { Badge } from '@/components/ui/badge';
-import { VideoIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { UseConfirm } from '@/hooks/use-confirm';
-import UpdateAgentDialog from '../components/update-product-dialog';
+import UpdateProductDialog from '../components/update-product-dialog';
 
 interface Props {
-	agentId: string;
+	productId: string;
 }
 
-const AgentIdView = ({ agentId }: Props) => {
-	const [updateAgentDialogOpen, setUpdateAgentDialogOpen] = useState(false);
+const ProductIdView = ({ productId }: Props) => {
+	const [updateProductDialogOpen, setUpdateProductDialogOpen] = useState(false);
 	const router = useRouter();
 	const queryClient = useQueryClient();
 	const trpc = useTRPC();
-	const { data } = useSuspenseQuery(trpc.agents.getOne.queryOptions({ id: agentId }));
+	const { data } = useSuspenseQuery(trpc.products.getOne.queryOptions({ id: productId }));
 
-	const removeAgent = useMutation(
-		trpc.agents.remove.mutationOptions({
+	const removeProduct = useMutation(
+		trpc.products.remove.mutationOptions({
 			onSuccess: async () => {
-				await queryClient.invalidateQueries(trpc.agents.getMany.queryOptions({}));
-				//TODO - Invalidate free tier usage
-
-				router.push('/agents');
+				await queryClient.invalidateQueries(trpc.products.getMany.queryOptions({}));
+				router.push('/products');
 			},
 			onError: (error) => {
 				toast.error(error.message);
@@ -40,28 +36,29 @@ const AgentIdView = ({ agentId }: Props) => {
 
 	const [RemoveConfirmation, confirmRemove] = UseConfirm(
 		'Are you sure?',
-		`The following action will remove ${data.meetingCount} associated meetings.`
+		`This will permanently delete the product.`
 	);
 
-	const handleRemoveAgent = async () => {
+	const handleRemoveProduct = async () => {
 		const ok = await confirmRemove();
 		if (!ok) return;
-		await removeAgent.mutateAsync({ id: agentId });
+		await removeProduct.mutateAsync({ id: productId });
 	};
+
 	return (
 		<>
 			<RemoveConfirmation />
-			<UpdateAgentDialog
-				open={updateAgentDialogOpen}
-				onOpenChange={setUpdateAgentDialogOpen}
+			<UpdateProductDialog
+				open={updateProductDialogOpen}
+				onOpenChange={setUpdateProductDialogOpen}
 				initialValues={data}
 			/>
 			<div className="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
-				<AgentIdViewHeader
-					agentId={agentId}
-					agentName={data.name}
-					onEdit={() => setUpdateAgentDialogOpen(true)}
-					onRemove={handleRemoveAgent}
+				<ProductIdViewHeader
+					productId={productId}
+					productName={data.name}
+					onEdit={() => setUpdateProductDialogOpen(true)}
+					onRemove={handleRemoveProduct}
 				/>
 				<div className="rounded-lg border bg-white">
 					<div className="col-span-5 flex flex-col gap-y-5 px-4 py-5">
@@ -73,17 +70,6 @@ const AgentIdView = ({ agentId }: Props) => {
 							/>
 							<h2 className="text-2xl font-medium">{data.name}</h2>
 						</div>
-						<Badge
-							className="flex items-center gap-x-2 [&>svg]:size-4"
-							variant={'outline'}
-						>
-							<VideoIcon className="text-blue-700" />
-							{data.meetingCount} {data.meetingCount === 1 ? 'Meeting' : 'Meetings'}
-						</Badge>
-						<div className="flex flex-col gap-y-4">
-							<p className="text-lg font-medium">Instructions</p>
-							<p className="text-neutral-800">{data.instructions}</p>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -91,12 +77,12 @@ const AgentIdView = ({ agentId }: Props) => {
 	);
 };
 
-export default AgentIdView;
+export default ProductIdView;
 
-export const AgentIdViewLoading = () => {
-	return <LoadingState title="Loading Agent" description="Please wait..." />;
+export const ProductIdViewLoading = () => {
+	return <LoadingState title="Loading Product" description="Please wait..." />;
 };
 
-export const AgentIdViewError = () => {
-	return <ErrorState title="Error Loading Agent" description="Please try again later." />;
+export const ProductIdViewError = () => {
+	return <ErrorState title="Error Loading Product" description="Please try again later." />;
 };

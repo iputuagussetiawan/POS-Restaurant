@@ -30,8 +30,7 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
 
-    const [categorySearch, setCategorySearch] = useState('');
-	const [openNewAgentDialog, setOpenNewAgentDialog] = useState(false);
+	const [categorySearch, setCategorySearch] = useState('');
 	const productCategories = useQuery(
 		trpc.categories.getMany.queryOptions({
 			pageSize: 100,
@@ -126,20 +125,22 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 							<FormLabel>Category Product</FormLabel>
 							<FormControl>
 								<CommandSelect
-									options={(productCategories.data?.items ?? []).map((category) => ({
-										id: category.id,
-										value: category.id,
-										children: (
-											<div className="flex items-center gap-x-2">
-												<GenerateAvatar
-													className="size-6 border"
-													seed={category.name}
-													variant="botttsNeutral"
-												/>
-												<span>{category.name}</span>
-											</div>
-										),
-									}))}
+									options={(productCategories.data?.items ?? []).map(
+										(category) => ({
+											id: category.id,
+											value: category.id,
+											children: (
+												<div className="flex items-center gap-x-2">
+													<GenerateAvatar
+														className="size-6 border"
+														seed={category.name}
+														variant="botttsNeutral"
+													/>
+													<span>{category.name}</span>
+												</div>
+											),
+										})
+									)}
 									onSelect={field.onChange}
 									onSearch={setCategorySearch}
 									value={field.value}
@@ -147,14 +148,10 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 								/>
 							</FormControl>
 							<FormDescription>
-								Not Found what&apos;s your agent?{' '}
-								<button
-									className="text-primary hover:underline"
-									type="button"
-									onClick={() => setOpenNewAgentDialog(true)}
-								>
-									Create New Category Product
-								</button>
+								Can&apos;t find your category?{' '}
+								<a href="/categories" className="text-primary hover:underline">
+									Manage Categories
+								</a>
 							</FormDescription>
 							<FormMessage />
 						</FormItem>

@@ -13,25 +13,26 @@ import { TRPCError } from '@trpc/server';
 import { productInsertSchema, productUpdateSchema } from '../schema';
 
 export const productsRouter = createTRPCRouter({
-	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input}) => {
+	create: protectedProcedure.input(productInsertSchema).mutation(async ({ input, ctx }) => {
 		const [createdProduct] = await db
 			.insert(products)
-			.values(input)
+			.values({ ...input, createdBy: ctx.auth.user.id })
 			.returning();
 		return createdProduct;
 	}),
-    
-	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async () => {
+
+	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
 		const [existingProduct] = await db
 			.select({
 				...getTableColumns(products),
 			})
-			.from(products);
+			.from(products)
+			.where(eq(products.id, input.id));
 
 		if (!existingProduct) {
 			throw new TRPCError({
 				code: 'NOT_FOUND',
-				message: 'Agent not found',
+				message: 'Product not found',
 			});
 		}
 		return existingProduct;
@@ -72,7 +73,12 @@ export const productsRouter = createTRPCRouter({
 			const [total] = await db
 				.select({ count: count() })
 				.from(products)
-				.where(and(search ? ilike(products.name, `%${search}%`) : undefined));
+				.where(
+					and(
+						search ? ilike(products.name, `%${search}%`) : undefined,
+						categoryId ? eq(products.categoryId, categoryId) : undefined
+					)
+				);
 
 			const totalPages = Math.ceil(total.count / pageSize);
 
@@ -83,26 +89,27 @@ export const productsRouter = createTRPCRouter({
 			};
 		}),
 
-	update: protectedProcedure.input(productUpdateSchema).mutation(async ({ input }) => {
+	update: protectedProcedure.input(productUpdateSchema).mutation(async ({ input, ctx }) => {
 		const [updatedProduct] = await db
 			.update(products)
 			.set(input)
-			.where(and(eq(products.id, input.id)))
+			.where(and(eq(products.id, input.id), eq(products.createdBy, ctx.auth.user.id)))
 			.returning();
 		if (!updatedProduct) {
 			throw new TRPCError({
 				code: 'NOT_FOUND',
-				message: 'Agent not found',
+				message: 'Product not found',
 			});
 		}
 		return updatedProduct;
 	}),
+
 	remove: protectedProcedure
 		.input(z.object({ id: z.string() }))
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
 			const [removedProduct] = await db
 				.delete(products)
-				.where(and(eq(products.id, input.id)))
+				.where(and(eq(products.id, input.id), eq(products.createdBy, ctx.auth.user.id)))
 				.returning();
 			if (!removedProduct) {
 				throw new TRPCError({

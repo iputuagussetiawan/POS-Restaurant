@@ -1,31 +1,31 @@
 import ResponsiveDialog from '@/components/responsive-dialog';
 import React from 'react';
-import AgentForm from './product-form';
-import { AgentGetOne } from '../../types';
+import ProductForm from './product-form';
+import { ProductGetOne } from '../../types';
 
-interface UpdateAgentDialogProp {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    initialValues?: AgentGetOne;
+interface UpdateProductDialogProp {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	initialValues?: ProductGetOne;
 }
 
-const UpdateAgentDialog = ({ open, onOpenChange, initialValues }: UpdateAgentDialogProp) => {
-    return (
-        <div>
-            <ResponsiveDialog
-                title="Edit Agent"
-                description="Edit the agent detail"
-                open={open}
-                onOpenChange={onOpenChange}
-            >
-                <AgentForm
-                    onSuccess={() => onOpenChange(false)}
-                    onCancel={() => onOpenChange(false)}
-                    initialValues={initialValues}
-                />
-            </ResponsiveDialog>
-        </div>
-    );
+const UpdateProductDialog = ({ open, onOpenChange, initialValues }: UpdateProductDialogProp) => {
+	return (
+		<div>
+			<ResponsiveDialog
+				title="Edit Product"
+				description="Edit the product detail"
+				open={open}
+				onOpenChange={onOpenChange}
+			>
+				<ProductForm
+					onSuccess={() => onOpenChange(false)}
+					onCancel={() => onOpenChange(false)}
+					initialValues={initialValues}
+				/>
+			</ResponsiveDialog>
+		</div>
+	);
 };
 
-export default UpdateAgentDialog;
+export default UpdateProductDialog;
