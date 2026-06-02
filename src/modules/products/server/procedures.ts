@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { db } from '@/db';
-import { categories, products } from '@/db/schema';
+import { categories, productItem, products } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
 import { and, between, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
 import {
