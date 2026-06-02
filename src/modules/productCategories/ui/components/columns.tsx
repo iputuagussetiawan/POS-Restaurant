@@ -1,40 +1,70 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { CornerDownRightIcon } from 'lucide-react';
 import { CategoriesGetMany } from '../../types';
+import { Button } from '@/components/ui/button';
+import { ArrowUpDownIcon } from 'lucide-react';
 import Image from 'next/image';
 
 export const columns: ColumnDef<CategoriesGetMany[number]>[] = [
 	{
 		accessorKey: 'name',
-		header: 'Agent Name',
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				size="sm"
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+				className="-ml-3 h-8"
+			>
+				Category Name
+				<ArrowUpDownIcon className="ml-2 size-3.5" />
+			</Button>
+		),
 		cell: ({ row }) => (
-			<div className="flex flex-col gap-y-1">
-				<div className="flex items-center gap-x-2">
+			<div className="flex items-center gap-x-3">
+				<div className="relative size-10 shrink-0 overflow-hidden rounded-lg border bg-muted">
 					<Image
 						src={row.original.imageUrl}
 						alt={row.original.name}
-						width={100}
-						height={100}
-						quality={100}
-						className="h-[42px] w-[42px] rounded-full object-cover"
+						fill
+						sizes="40px"
+						className="object-cover"
 					/>
-					<span className="font-semibold capitalize">{row.original.name}</span>
 				</div>
-				<div className="flex items-center gap-x-2">
-					<CornerDownRightIcon className="size-3 text-muted-foreground" />
-					<span className="max-w-[200px] truncate text-sm text-muted-foreground capitalize">
-						{row.original.id}
-					</span>
-				</div>
+				<span className="font-medium capitalize">{row.original.name}</span>
 			</div>
 		),
 	},
-
 	{
 		accessorKey: 'description',
 		header: 'Description',
-		cell: ({ row }) => <div>{row.original.description}</div>,
+		cell: ({ row }) => (
+			<span className="max-w-[360px] truncate text-sm text-muted-foreground">
+				{row.original.description}
+			</span>
+		),
+	},
+	{
+		accessorKey: 'createdAt',
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				size="sm"
+				onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+				className="-ml-3 h-8"
+			>
+				Created
+				<ArrowUpDownIcon className="ml-2 size-3.5" />
+			</Button>
+		),
+		cell: ({ row }) => (
+			<span className="text-sm text-muted-foreground">
+				{new Date(row.original.createdAt).toLocaleDateString('en-US', {
+					year: 'numeric',
+					month: 'short',
+					day: 'numeric',
+				})}
+			</span>
+		),
 	},
 ];

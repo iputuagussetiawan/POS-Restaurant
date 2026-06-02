@@ -1,8 +1,22 @@
 'use client';
 
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import {
+	ColumnDef,
+	SortingState,
+	flexRender,
+	getCoreRowModel,
+	getSortedRowModel,
+	useReactTable,
+} from '@tanstack/react-table';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { useState } from 'react';
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -15,26 +29,47 @@ export function DataTable<TData, TValue>({
 	data,
 	onRowClick,
 }: DataTableProps<TData, TValue>) {
+	const [sorting, setSorting] = useState<SortingState>([]);
+
 	const table = useReactTable({
 		data,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+		onSortingChange: setSorting,
+		state: { sorting },
 	});
 
 	return (
-		<div className="overflow-hidden rounded-lg border bg-background">
+		<div className="overflow-hidden rounded-lg border bg-white">
 			<Table>
+				<TableHeader>
+					{table.getHeaderGroups().map((headerGroup) => (
+						<TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
+							{headerGroup.headers.map((header) => (
+								<TableHead key={header.id} className="px-4 py-3">
+									{header.isPlaceholder
+										? null
+										: flexRender(
+												header.column.columnDef.header,
+												header.getContext()
+											)}
+								</TableHead>
+							))}
+						</TableRow>
+					))}
+				</TableHeader>
 				<TableBody>
-					{table.getRowModel().rows?.length ? (
+					{table.getRowModel().rows.length ? (
 						table.getRowModel().rows.map((row) => (
 							<TableRow
-								onClick={() => onRowClick?.(row.original)}
 								key={row.id}
-								data-state={row.getIsSelected() && 'selected'}
-								className="cursor-pointer"
+								onClick={() => onRowClick?.(row.original)}
+								className={onRowClick ? 'cursor-pointer' : undefined}
+								data-state={row.getIsSelected() ? 'selected' : undefined}
 							>
 								{row.getVisibleCells().map((cell) => (
-									<TableCell key={cell.id} className="p-4 text-sm">
+									<TableCell key={cell.id} className="px-4 py-3">
 										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
 								))}
@@ -44,7 +79,7 @@ export function DataTable<TData, TValue>({
 						<TableRow>
 							<TableCell
 								colSpan={columns.length}
-								className="h-19 text-center text-muted-foreground"
+								className="h-24 text-center text-muted-foreground"
 							>
 								No results.
 							</TableCell>

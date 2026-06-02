@@ -10,43 +10,45 @@ import { useCategoriesFilters } from '../../hooks/use-categories-filter';
 import DataPagination from '../components/data-pagination';
 import { useRouter } from 'next/navigation';
 import { DataTable } from '@/components/data-table';
+import { DEFAULT_PAGE_SIZE } from '../../../../../constants';
 
 export const CategoriesView = () => {
 	const router = useRouter();
 	const [filters, setFilters] = useCategoriesFilters();
 	const trpc = useTRPC();
-	const { data } = useSuspenseQuery(
-		trpc.categories.getMany.queryOptions({
-			...filters,
-		})
-	);
+	const { data } = useSuspenseQuery(trpc.categories.getMany.queryOptions({ ...filters }));
 
 	return (
 		<div className="flex flex-1 flex-col gap-y-4 px-4 pb-4 md:px-8">
-			<DataTable
-				data={data.items}
-				columns={columns}
-				onRowClick={(row) => router.push(`/categories/${row.id}`)}
-			/>
-			<DataPagination
-				page={filters.page}
-				totalPages={data.totalPages}
-				onPageChange={(page) => setFilters({ page })}
-			/>
-			{data.items.length == 0 && (
+			{data.items.length === 0 ? (
 				<EmptyState
-					title="Create your first category"
-					description="Create a category to join your meeting. Each category will follow yor instructions and can interact with participants during the meeting."
+					title="No categories found"
+					description="Try adjusting your search or create a new category."
 				/>
+			) : (
+				<>
+					<DataTable
+						data={data.items}
+						columns={columns}
+						onRowClick={(row) => router.push(`/categories/${row.id}`)}
+					/>
+					<DataPagination
+						page={filters.page}
+						total={data.total}
+						totalPages={data.totalPages}
+						pageSize={filters.pageSize ?? DEFAULT_PAGE_SIZE}
+						onPageChange={(page) => setFilters({ page })}
+					/>
+				</>
 			)}
 		</div>
 	);
 };
 
-export const CategoriesViewLoading = () => {
-	return <LoadingState title="Loading categories" description="Please wait..." />;
-};
+export const CategoriesViewLoading = () => (
+	<LoadingState title="Loading categories" description="Please wait..." />
+);
 
-export const CategoriesViewError = () => {
-	return <ErrorState title="Error loading categories" description="Please try again later." />;
-};
+export const CategoriesViewError = () => (
+	<ErrorState title="Error loading categories" description="Please try again later." />
+);
