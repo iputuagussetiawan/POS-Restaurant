@@ -19,6 +19,15 @@ import { DataTable } from '@/components/data-table';
 import { useProductsFilters } from '../../hooks/use-products-filter';
 import { columns } from '../components/columns';
 import { DEFAULT_PAGE_SIZE } from '../../../../../constants';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 export const ProductView = () => {
 	const router = useRouter();
@@ -27,14 +36,33 @@ export const ProductView = () => {
 	const { data } = useSuspenseQuery(trpc.products.getMany.queryOptions({ ...filters }));
 
 	return (
-		<div className="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
-			{/* result count */}
-			<div className="flex items-center justify-between">
+		<div className="flex flex-col gap-y-4 px-4 py-4 md:px-8">
+			<div className="flex items-center justify-between gap-x-4">
 				<p className="text-sm text-muted-foreground">
 					{data.total === 0
 						? 'No products found'
 						: `${data.total} product${data.total === 1 ? '' : 's'} found`}
 				</p>
+				<div className="flex items-center gap-x-2">
+					<span className="text-sm whitespace-nowrap text-muted-foreground">
+						Rows per page
+					</span>
+					<Select
+						value={String(filters.pageSize ?? DEFAULT_PAGE_SIZE)}
+						onValueChange={(v) => setFilters({ pageSize: Number(v), page: 1 })}
+					>
+						<SelectTrigger size="sm" className="w-20 font-medium">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent align="end">
+							{PAGE_SIZE_OPTIONS.map((s) => (
+								<SelectItem key={s} value={String(s)}>
+									{s}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
 			{data.items.length === 0 ? (
@@ -55,6 +83,7 @@ export const ProductView = () => {
 						totalPages={data.totalPages}
 						pageSize={filters.pageSize ?? DEFAULT_PAGE_SIZE}
 						onPageChange={(page) => setFilters({ page })}
+						onPageSizeChange={(pageSize) => setFilters({ pageSize, page: 1 })}
 					/>
 				</>
 			)}
@@ -63,7 +92,7 @@ export const ProductView = () => {
 };
 
 export const ProductViewLoading = () => (
-	<div className="flex flex-1 flex-col gap-y-4 px-4 py-4 md:px-8">
+	<div className="flex flex-col gap-y-4 px-4 py-4 md:px-8">
 		<Skeleton className="h-4 w-36" />
 		<div className="overflow-hidden rounded-lg border bg-white">
 			<Table>

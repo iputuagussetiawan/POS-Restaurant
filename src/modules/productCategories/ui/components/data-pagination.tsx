@@ -9,6 +9,15 @@ import {
 	PaginationNext,
 	PaginationPrevious,
 } from '@/components/ui/pagination';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 interface Props {
 	page: number;
@@ -16,6 +25,7 @@ interface Props {
 	totalPages: number;
 	pageSize: number;
 	onPageChange: (page: number) => void;
+	onPageSizeChange?: (pageSize: number) => void;
 }
 
 function getPageNumbers(current: number, total: number): (number | 'ellipsis')[] {
@@ -26,19 +36,53 @@ function getPageNumbers(current: number, total: number): (number | 'ellipsis')[]
 	return [1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total];
 }
 
-const DataPagination = ({ page, total, totalPages, pageSize, onPageChange }: Props) => {
+const DataPagination = ({
+	page,
+	total,
+	totalPages,
+	pageSize,
+	onPageChange,
+	onPageSizeChange,
+}: Props) => {
 	const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
 	const to = Math.min(page * pageSize, total);
 	const pages = getPageNumbers(page, totalPages);
 
 	return (
-		<div className="flex flex-col items-center gap-4 border-t pt-4 sm:flex-row sm:justify-between">
-			<p className="text-sm text-muted-foreground">
-				{total === 0 ? 'No results' : `Showing ${from}–${to} of ${total} categories`}
-			</p>
+		<div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+			<div className="flex items-center gap-x-4">
+				{onPageSizeChange && (
+					<div className="flex items-center gap-x-2">
+						<span className="text-sm whitespace-nowrap text-muted-foreground">
+							Rows per page
+						</span>
+						<Select
+							value={String(pageSize)}
+							onValueChange={(v) => {
+								onPageSizeChange(Number(v));
+								onPageChange(1);
+							}}
+						>
+							<SelectTrigger size="sm" className="w-20 font-medium">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent align="end">
+								{PAGE_SIZE_OPTIONS.map((size) => (
+									<SelectItem key={size} value={String(size)}>
+										{size}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				)}
+				<p className="text-sm whitespace-nowrap text-muted-foreground">
+					{total === 0 ? 'No results' : `${from}–${to} of ${total}`}
+				</p>
+			</div>
 
 			{totalPages > 1 && (
-				<Pagination className="w-auto">
+				<Pagination className="mx-0 ml-auto w-auto justify-end">
 					<PaginationContent>
 						<PaginationItem>
 							<PaginationPrevious
@@ -50,7 +94,6 @@ const DataPagination = ({ page, total, totalPages, pageSize, onPageChange }: Pro
 								className={page <= 1 ? 'pointer-events-none opacity-50' : ''}
 							/>
 						</PaginationItem>
-
 						{pages.map((p, i) =>
 							p === 'ellipsis' ? (
 								<PaginationItem key={`ellipsis-${i}`}>
@@ -71,7 +114,6 @@ const DataPagination = ({ page, total, totalPages, pageSize, onPageChange }: Pro
 								</PaginationItem>
 							)
 						)}
-
 						<PaginationItem>
 							<PaginationNext
 								href="#"

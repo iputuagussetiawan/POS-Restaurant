@@ -1,6 +1,7 @@
 'use client';
+
 import { Button } from '@/components/ui/button';
-import { PlusIcon, XCircleIcon } from 'lucide-react';
+import { PlusIcon, XIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import NewAgentDialog from './new-agent-dialog';
 import { DEFAULT_PAGE } from '../../../../../constants';
@@ -21,23 +22,41 @@ const CategoriesListHeader = () => {
 	return (
 		<>
 			<NewAgentDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
-			<div className="flex flex-col gap-y-4 px-4 py-4 md:px-8">
+
+			{/* title bar — scrolls away */}
+			<div className="border-b bg-background px-4 py-5 md:px-8">
 				<div className="flex items-center justify-between">
-					<h5 className="text-xl font-medium">Product Categories</h5>
-					<Button onClick={() => setIsDialogOpen(true)}>
+					<div className="space-y-0.5">
+						<h1 className="text-2xl font-bold tracking-tight">Product Categories</h1>
+						<p className="text-sm text-muted-foreground">
+							Organise your menu by grouping products into categories.
+						</p>
+					</div>
+					<Button onClick={() => setIsDialogOpen(true)} className="gap-x-2 shadow-sm">
 						<PlusIcon className="size-4" />
-						New Category
+						Add Category
 					</Button>
 				</div>
+			</div>
 
+			{/* filter toolbar — sticky */}
+			<div className="sticky top-[57px] z-10 border-b bg-background/80 px-4 py-2.5 backdrop-blur-md md:px-8">
 				<ScrollArea>
-					<div className="flex items-center gap-x-2 p-1">
+					<div className="flex w-full items-center gap-x-2">
 						<CategoriesSearchFilter />
 						{isAnyFilterModified && (
-							<Button variant="outline" size="sm" onClick={onClearFilters}>
-								<XCircleIcon className="size-4" />
-								Clear filters
-							</Button>
+							<>
+								<div className="h-5 w-px bg-border" />
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={onClearFilters}
+									className="h-8 gap-x-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
+								>
+									<XIcon className="size-3" />
+									Clear filters
+								</Button>
+							</>
 						)}
 					</div>
 					<ScrollBar orientation="horizontal" />

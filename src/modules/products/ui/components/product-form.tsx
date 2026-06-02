@@ -80,6 +80,7 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 			description: initialValues?.description ?? '',
 			price: initialValues?.price ? Number(initialValues.price) : 0,
 			isAvailable: initialValues?.isAvailable ?? true,
+			images: (initialValues?.images as string[] | null) ?? [],
 		},
 	});
 
@@ -204,7 +205,7 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 
 							{/* preview */}
 							{imageUrl && (
-								<div className="relative mt-1 flex items-center gap-x-3 rounded-md border bg-muted/30 p-2">
+								<div className="relative mt-1 flex min-w-0 items-center gap-x-3 overflow-hidden rounded-md border bg-muted/30 p-2">
 									<div className="relative size-14 shrink-0 overflow-hidden rounded-md border">
 										<Image
 											src={imageUrl}
@@ -246,6 +247,75 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 							<FormMessage />
 						</FormItem>
 					)}
+				/>
+
+				{/* ── gallery images ── */}
+				<FormField
+					control={form.control}
+					name="images"
+					render={({ field }) => {
+						const extraImages: string[] = field.value ?? [];
+						const addImageUrl = () => {
+							const url = prompt('Enter image URL:');
+							if (url?.trim()) field.onChange([...extraImages, url.trim()]);
+						};
+						const removeImage = (index: number) => {
+							field.onChange(extraImages.filter((_, i) => i !== index));
+						};
+						return (
+							<FormItem>
+								<div className="flex items-center justify-between">
+									<FormLabel>
+										Gallery Images{' '}
+										<span className="font-normal text-muted-foreground">
+											(optional)
+										</span>
+									</FormLabel>
+									<button
+										type="button"
+										onClick={addImageUrl}
+										className="text-xs font-medium text-primary hover:underline"
+									>
+										+ Add image
+									</button>
+								</div>
+								{extraImages.length > 0 ? (
+									<div className="flex flex-wrap gap-2">
+										{extraImages.map((img, i) => (
+											<div
+												key={i}
+												className="group relative size-16 overflow-hidden rounded-lg border"
+											>
+												<Image
+													src={img}
+													alt={`Gallery ${i + 1}`}
+													fill
+													sizes="64px"
+													className="object-cover"
+												/>
+												<button
+													type="button"
+													onClick={() => removeImage(i)}
+													className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+												>
+													<XIcon className="size-4 text-white" />
+												</button>
+											</div>
+										))}
+									</div>
+								) : (
+									<div className="flex items-center gap-x-2 rounded-md border border-dashed px-3 py-3">
+										<ImageIcon className="size-4 text-muted-foreground/40" />
+										<p className="text-xs text-muted-foreground">
+											No gallery images — click "+ Add image" to add more
+											views
+										</p>
+									</div>
+								)}
+								<FormMessage />
+							</FormItem>
+						);
+					}}
 				/>
 
 				<Separator />

@@ -21,15 +21,15 @@ export const ProductSearchFilter = () => {
 	}, [filters.search]);
 
 	return (
-		<div className="relative">
+		<div className="relative flex-1">
 			<Input
-				className="h-8 w-[220px] bg-background pl-7 text-sm"
+				className="h-8 w-full bg-background pl-7 text-sm"
 				type="text"
-				placeholder="Filter by name..."
+				placeholder="Search..."
 				value={inputValue}
 				onChange={(e) => setInputValue(e.target.value)}
 			/>
-			<SearchIcon className="absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground" />
+			<SearchIcon className="absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
 		</div>
 	);
 };

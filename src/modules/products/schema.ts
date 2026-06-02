@@ -8,6 +8,7 @@ export const productInsertSchema = z.object({
 	price: z.coerce.number().min(0, { message: 'Price must be 0 or more.' }),
 	isAvailable: z.boolean(),
 	imageUrl: z.string().min(1, { message: 'Image is required.' }),
+	images: z.array(z.string()).optional(),
 });
 
 export const productUpdateSchema = productInsertSchema.extend({

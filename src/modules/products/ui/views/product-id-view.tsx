@@ -10,10 +10,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { UseConfirm } from '@/hooks/use-confirm';
 import UpdateProductDialog from '../components/update-product-dialog';
-import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { TagIcon, DollarSignIcon, CalendarIcon, HashIcon } from 'lucide-react';
+import { DollarSignIcon, CalendarIcon, HashIcon } from 'lucide-react';
+import ProductImageGallery from '@/components/product-image-gallery';
 
 interface Props {
 	productId: string;
@@ -66,19 +66,13 @@ const ProductIdView = ({ productId }: Props) => {
 				/>
 
 				<div className="grid gap-4 lg:grid-cols-3">
-					{/* left — image */}
+					{/* left — image gallery */}
 					<div className="flex flex-col gap-y-4">
-						<div className="overflow-hidden rounded-xl border bg-white">
-							<div className="relative aspect-square w-full">
-								<Image
-									src={data.imageUrl}
-									alt={data.name}
-									fill
-									sizes="(max-width: 1024px) 100vw, 33vw"
-									className="object-cover"
-								/>
-							</div>
-						</div>
+						<ProductImageGallery
+							mainImage={data.imageUrl}
+							images={data.images as string[] | null}
+							alt={data.name}
+						/>
 					</div>
 
 					{/* right — details */}

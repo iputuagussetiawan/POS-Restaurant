@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, decimal, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, decimal, boolean, json } from 'drizzle-orm/pg-core';
 import { nanoid } from 'nanoid';
 import { user } from './auth';
 import { categories } from './categories';
@@ -18,6 +18,7 @@ export const products = pgTable('products', {
 	price: decimal('price', { precision: 10, scale: 2 }).notNull().default('0'),
 	isAvailable: boolean('is_available').notNull().default(true),
 	imageUrl: text('image_url').notNull(),
+	images: json('images').$type<string[]>().default([]),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

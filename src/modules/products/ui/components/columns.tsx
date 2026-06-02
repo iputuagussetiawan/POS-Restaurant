@@ -4,8 +4,85 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ProductGetMany } from '../../types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDownIcon } from 'lucide-react';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ArrowUpDownIcon, MoreHorizontalIcon, PencilIcon, TrashIcon, EyeIcon } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTRPC } from '@/trpc/client';
+import { toast } from 'sonner';
+import { UseConfirm } from '@/hooks/use-confirm';
+import UpdateProductDialog from './update-product-dialog';
+import { ProductGetOne } from '../../types';
+
+const RowActions = ({ row }: { row: ProductGetMany[number] }) => {
+	const router = useRouter();
+	const trpc = useTRPC();
+	const queryClient = useQueryClient();
+	const [editOpen, setEditOpen] = useState(false);
+
+	const remove = useMutation(
+		trpc.products.remove.mutationOptions({
+			onSuccess: async () => {
+				await queryClient.invalidateQueries(trpc.products.getMany.queryOptions({}));
+				toast.success('Product deleted.');
+			},
+			onError: (e) => toast.error(e.message),
+		})
+	);
+
+	const [ConfirmDialog, confirm] = UseConfirm(
+		'Delete product?',
+		`"${row.name}" will be permanently removed.`
+	);
+
+	const handleDelete = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		const ok = await confirm();
+		if (!ok) return;
+		remove.mutate({ id: row.id });
+	};
+
+	return (
+		<>
+			<ConfirmDialog />
+			<UpdateProductDialog
+				open={editOpen}
+				onOpenChange={setEditOpen}
+				initialValues={row as unknown as ProductGetOne}
+			/>
+			<DropdownMenu modal={false}>
+				<DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+					<Button variant="ghost" size="icon" className="size-8">
+						<MoreHorizontalIcon className="size-4" />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+					<DropdownMenuItem onClick={() => router.push(`/products/${row.id}`)}>
+						<EyeIcon className="mr-2 size-4" /> View details
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setEditOpen(true)}>
+						<PencilIcon className="mr-2 size-4" /> Edit
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem
+						onClick={handleDelete}
+						className="text-destructive focus:text-destructive"
+					>
+						<TrashIcon className="mr-2 size-4" /> Delete
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</>
+	);
+};
 
 export const columns: ColumnDef<ProductGetMany[number]>[] = [
 	{
@@ -111,6 +188,16 @@ export const columns: ColumnDef<ProductGetMany[number]>[] = [
 					day: 'numeric',
 				})}
 			</span>
+		),
+	},
+	{
+		id: 'actions',
+		header: '',
+		meta: { className: 'w-10' },
+		cell: ({ row }) => (
+			<div className="flex justify-end">
+				<RowActions row={row.original} />
+			</div>
 		),
 	},
 ];

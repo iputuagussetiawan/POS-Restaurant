@@ -37,33 +37,31 @@ const ProductListHeader = () => {
 		<>
 			<NewProductDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
-			<div className="border-b bg-background">
-				{/* ── title bar ── */}
-				<div className="flex items-center justify-between px-4 py-5 md:px-8">
+			{/* title bar — scrolls away */}
+			<div className="border-b bg-background px-4 py-5 md:px-8">
+				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
 						<h1 className="text-2xl font-bold tracking-tight">Products</h1>
 						<p className="text-sm text-muted-foreground">
 							Manage your menu items, prices and availability.
 						</p>
 					</div>
-
 					<Button onClick={() => setIsDialogOpen(true)} className="gap-x-2 shadow-sm">
 						<PlusIcon className="size-4" />
 						Add Product
 					</Button>
 				</div>
+			</div>
 
-				{/* ── filter toolbar ── */}
-				<div className="border-t bg-muted/30 px-4 py-2.5 md:px-8">
-					<ScrollArea>
-						<div className="flex items-center gap-x-2">
-							<ProductSearchFilter />
-
+			{/* filter toolbar — sticky */}
+			<div className="sticky top-[57px] z-10 border-b bg-background/80 px-4 py-2.5 backdrop-blur-md md:px-8">
+				<ScrollArea>
+					<div className="flex w-full items-center gap-x-2">
+						<ProductSearchFilter />
+						<div className="flex shrink-0 items-center gap-x-2">
 							<div className="h-5 w-px bg-border" />
-
 							<ProductCategoryIdFilter />
 							<ProductPriceFilter />
-
 							{isAnyFilterModified && (
 								<>
 									<div className="h-5 w-px bg-border" />
@@ -79,9 +77,9 @@ const ProductListHeader = () => {
 								</>
 							)}
 						</div>
-						<ScrollBar orientation="horizontal" />
-					</ScrollArea>
-				</div>
+					</div>
+					<ScrollBar orientation="horizontal" />
+				</ScrollArea>
 			</div>
 		</>
 	);

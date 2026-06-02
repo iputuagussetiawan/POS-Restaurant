@@ -76,6 +76,8 @@ function CommandResponsiveDialog({
 	className,
 	showCloseButton = true,
 	shouldFilter = true,
+	onInteractOutside,
+	onEscapeKeyDown,
 	...props
 }: React.ComponentProps<typeof Dialog> & {
 	title?: string;
@@ -83,6 +85,8 @@ function CommandResponsiveDialog({
 	className?: string;
 	showCloseButton?: boolean;
 	shouldFilter?: boolean;
+	onInteractOutside?: (e: Event) => void;
+	onEscapeKeyDown?: (e: KeyboardEvent) => void;
 }) {
 	const isMobile = useIsMobile();
 	if (isMobile) {
@@ -112,6 +116,8 @@ function CommandResponsiveDialog({
 			<DialogContent
 				className={cn('overflow-hidden p-0', className)}
 				showCloseButton={showCloseButton}
+				onInteractOutside={onInteractOutside}
+				onEscapeKeyDown={onEscapeKeyDown}
 			>
 				<Command
 					shouldFilter={shouldFilter}

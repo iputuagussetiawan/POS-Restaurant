@@ -47,7 +47,10 @@ export function DataTable<TData, TValue>({
 					{table.getHeaderGroups().map((headerGroup) => (
 						<TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
 							{headerGroup.headers.map((header) => (
-								<TableHead key={header.id} className="px-4 py-3">
+								<TableHead
+									key={header.id}
+									className={`px-4 py-3 ${(header.column.columnDef.meta as { className?: string })?.className ?? ''}`}
+								>
 									{header.isPlaceholder
 										? null
 										: flexRender(

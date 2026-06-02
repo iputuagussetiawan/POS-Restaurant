@@ -27,7 +27,7 @@ const toSlug = (name: string) =>
 
 const CATEGORY_PRODUCTS: Record<
 	string,
-	{ name: string; imageUrl: string; description?: string; price?: number }[]
+	{ name: string; imageUrl: string; description?: string; price?: number; images?: string[] }[]
 > = {
 	Appetizers: appetizers,
 	'Main Courses': mainCourses,
@@ -132,6 +132,7 @@ async function main() {
 							price: basePrice.toFixed(2),
 							isAvailable: true,
 							imageUrl: p.imageUrl,
+							images: p.images ?? [],
 							createdAt: productCreatedAt,
 							updatedAt: productUpdatedAt,
 						};
