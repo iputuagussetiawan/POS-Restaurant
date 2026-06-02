@@ -36,12 +36,12 @@ const ResponsiveDialog = ({
 	if (isMobile) {
 		return (
 			<Drawer open={open} onOpenChange={onOpenChange}>
-				<DrawerContent>
+				<DrawerContent className="max-h-[90svh]">
 					<DrawerHeader>
 						<DrawerTitle>{title}</DrawerTitle>
 						<DrawerDescription>{description}</DrawerDescription>
 					</DrawerHeader>
-					<div className="p-4">{children}</div>
+					<div className="overflow-y-auto p-4">{children}</div>
 				</DrawerContent>
 			</Drawer>
 		);
@@ -49,12 +49,12 @@ const ResponsiveDialog = ({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="overflow-hidden sm:max-w-2xl">
-				<DialogHeader>
+			<DialogContent className="flex max-h-[90svh] flex-col gap-0 overflow-hidden sm:max-w-2xl">
+				<DialogHeader className="shrink-0 pb-4">
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>
 				</DialogHeader>
-				{children}
+				<div className="overflow-y-auto">{children}</div>
 			</DialogContent>
 		</Dialog>
 	);
