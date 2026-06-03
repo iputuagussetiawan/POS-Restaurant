@@ -16,32 +16,28 @@ interface CardCategoryProps {
 const CardCategory = ({ category, onSelect, selectedValue, className }: CardCategoryProps) => {
 	const isSelected = selectedValue === category.id;
 	return (
-		<div
-			onClick={() => {
-				onSelect(category.id);
-			}}
+		<button
+			onClick={() => onSelect(category.id)}
 			className={cn(
-				'group flex min-w-[50px] cursor-pointer items-center justify-start gap-2 rounded-4xl border-1 p-2 transition-all',
+				'group flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-200',
 				isSelected
 					? 'border-green-700 bg-green-700 text-white'
-					: 'border-green-500 bg-green-100 text-emerald-600 hover:border-green-700 hover:bg-green-700 hover:text-white',
+					: 'border-gray-200 bg-white text-gray-600 hover:border-green-600 hover:bg-green-50 hover:text-green-700',
 				className
 			)}
 		>
 			{category.imageUrl && (
 				<Image
 					src={category.imageUrl}
-					alt="category"
-					width={100}
-					height={100}
-					quality={100}
-					className="h-[20px] w-[20px] rounded-full object-cover"
+					alt={category.name}
+					width={20}
+					height={20}
+					quality={90}
+					className="h-5 w-5 rounded-full object-cover"
 				/>
 			)}
-			<h3 className="flex-1 text-xs font-semibold whitespace-nowrap transition-all ease-in group-hover:text-white">
-				{category.name}
-			</h3>
-		</div>
+			{category.name}
+		</button>
 	);
 };
 

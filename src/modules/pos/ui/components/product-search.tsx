@@ -1,29 +1,42 @@
-import { Button } from '@/components/ui/button';
+'use client';
 import { Input } from '@/components/ui/input';
 import { usePOSFilters } from '@/modules/pos/hooks/use-pos-filter';
-import { Search } from 'lucide-react';
+import { Search, XIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
 const ProductSearch = () => {
 	const [filters, setFilters] = usePOSFilters();
-	const [inputValue, setInputValue] = useState(filters.search || '');
-	const handleSearchClick = () => {
-		setFilters({ search: inputValue });
+	const [value, setValue] = useState(filters.search || '');
+
+	const commit = (val: string) => setFilters({ search: val, page: 1 });
+
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Enter') commit(value);
 	};
+
+	const handleClear = () => {
+		setValue('');
+		commit('');
+	};
+
 	return (
-		<div className="relative w-full">
-			<Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+		<div className="relative flex items-center">
+			<Search className="absolute left-3 h-4 w-4 text-gray-400" />
 			<Input
-				onChange={(e) => setInputValue(e.target.value)}
-				placeholder="Search for a product..."
-				className="h-12 rounded-full py-4 pr-16 pl-10 text-gray-500 shadow-none transition-all duration-300 ease-in-out focus-visible:border-green-700 focus-visible:border-r-green-700 focus-visible:shadow-none focus-visible:ring-0 focus-visible:outline-0"
+				value={value}
+				onChange={(e) => setValue(e.target.value)}
+				onKeyDown={handleKeyDown}
+				placeholder="Search products..."
+				className="h-9 rounded-full border-gray-200 bg-white pr-8 pl-9 text-sm text-gray-700 shadow-none placeholder:text-gray-400 focus-visible:border-green-500 focus-visible:ring-0"
 			/>
-			<Button
-				onClick={handleSearchClick}
-				className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-green-700 text-white transition-all duration-300 ease-in-out hover:bg-green-800"
-			>
-				Search
-			</Button>
+			{value && (
+				<button
+					onClick={handleClear}
+					className="absolute right-3 text-gray-400 hover:text-gray-600"
+				>
+					<XIcon className="h-3.5 w-3.5" />
+				</button>
+			)}
 		</div>
 	);
 };

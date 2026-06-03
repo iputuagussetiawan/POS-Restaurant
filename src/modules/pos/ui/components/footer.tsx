@@ -2,9 +2,9 @@ import React from 'react';
 
 const FooterPOS = () => {
 	return (
-		<div className="p-4 text-center text-sm text-muted-foreground">
-			<p>&copy; {new Date().getFullYear()} Green Line Software</p>
-		</div>
+		<footer className="border-t bg-white px-6 py-3 text-center text-xs text-muted-foreground">
+			&copy; {new Date().getFullYear()} Green Line Software &mdash; Food Order POS
+		</footer>
 	);
 };
 

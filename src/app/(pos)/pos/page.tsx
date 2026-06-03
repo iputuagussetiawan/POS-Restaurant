@@ -17,19 +17,25 @@ const POSPage = async ({ searchParams }: Props) => {
 	const queryClient = getQueryClient();
 	void queryClient.prefetchQuery(
 		trpc.products.getMany.queryOptions({
-			...filters,
+			search: filters.search,
+			page: filters.page,
+			categorySlugs: filters.categorySlug ? [filters.categorySlug] : undefined,
 		})
 	);
 	return (
-		<HydrationBoundary state={dehydrate(queryClient)}>
-			<HeaderPOS />
-			<Suspense fallback={<POSViewLoading />}>
-				<ErrorBoundary fallback={<POSViewError />}>
-					<PosView />
-				</ErrorBoundary>
-			</Suspense>
-			<FooterPOS />
-		</HydrationBoundary>
+		<div className="flex min-h-screen flex-col bg-muted">
+			<HydrationBoundary state={dehydrate(queryClient)}>
+				<HeaderPOS />
+				<div className="flex-1">
+					<Suspense fallback={<POSViewLoading />}>
+						<ErrorBoundary fallback={<POSViewError />}>
+							<PosView />
+						</ErrorBoundary>
+					</Suspense>
+				</div>
+				<FooterPOS />
+			</HydrationBoundary>
+		</div>
 	);
 };
 
