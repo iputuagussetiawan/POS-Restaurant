@@ -34,7 +34,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useTRPC } from '@/trpc/client';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 type PaymentMethod = 'cash' | 'card' | 'qris' | 'transfer';
@@ -100,6 +100,11 @@ interface ReceiptProps {
 const Receipt = ({ order }: ReceiptProps) => {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
+
+	const { data: company } = useQuery(trpc.company.get.queryOptions());
+	const companyName = company?.name ?? 'FoodOrder';
+	const receiptFooter = company?.receiptFooter ?? '© FoodOrder · Green Line Software';
+	const logoUrl = company?.logoUrl ?? null;
 
 	const isMember = !!order.customerId && !!order.customerName2;
 	const displayCustomer = order.customerName2 ?? order.customerName ?? 'Walk-in Customer';
@@ -278,10 +283,21 @@ const Receipt = ({ order }: ReceiptProps) => {
 			>
 				{/* Brand header */}
 				<div className="flex flex-col items-center gap-2 rounded-t-2xl bg-green-700 px-6 py-6 text-white print:rounded-none">
-					<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
-						<UtensilsCrossedIcon className="h-6 w-6 text-white" />
-					</div>
-					<p className="text-xl font-bold tracking-tight">FoodOrder</p>
+					{logoUrl ? (
+						<div className="relative h-12 w-12 overflow-hidden rounded-2xl bg-white/20">
+							<Image
+								src={logoUrl}
+								alt={companyName}
+								fill
+								className="object-contain p-1"
+							/>
+						</div>
+					) : (
+						<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
+							<UtensilsCrossedIcon className="h-6 w-6 text-white" />
+						</div>
+					)}
+					<p className="text-xl font-bold tracking-tight">{companyName}</p>
 					<p className="text-xs text-green-200">Official Receipt</p>
 				</div>
 
@@ -502,7 +518,7 @@ const Receipt = ({ order }: ReceiptProps) => {
 							Thank you for your order!
 						</p>
 						<p className="text-[11px] text-gray-400">
-							© {new Date().getFullYear()} FoodOrder · Green Line Software
+							{receiptFooter || `© ${new Date().getFullYear()} ${companyName}`}
 						</p>
 					</div>
 				</div>

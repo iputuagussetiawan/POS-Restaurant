@@ -122,7 +122,7 @@ export default async function LandingPage() {
 									className="hidden gap-x-1.5 sm:flex"
 									asChild
 								>
-									<Link href="/">
+									<Link href="/admin">
 										<LayoutDashboardIcon className="size-3.5" />
 										Dashboard
 									</Link>
@@ -169,7 +169,7 @@ export default async function LandingPage() {
 								className="gap-x-2 bg-green-700 px-8 hover:bg-green-800"
 								asChild
 							>
-								<Link href="/">
+								<Link href="/admin/users">
 									Go to Dashboard <ArrowRightIcon className="size-4" />
 								</Link>
 							</Button>
@@ -342,7 +342,7 @@ export default async function LandingPage() {
 								className="bg-white px-10 text-green-700 hover:bg-green-50"
 								asChild
 							>
-								<Link href="/">
+								<Link href="/admin/users">
 									Go to Dashboard <ArrowRightIcon className="ml-2 size-4" />
 								</Link>
 							</Button>
@@ -373,7 +373,7 @@ export default async function LandingPage() {
 					<p>© {new Date().getFullYear()} FoodOrder. All rights reserved.</p>
 					<div className="flex gap-x-6">
 						{user ? (
-							<Link href="/" className="hover:text-foreground">
+							<Link href="/admin" className="hover:text-foreground">
 								Dashboard
 							</Link>
 						) : (

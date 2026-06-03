@@ -12,7 +12,7 @@ import {
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { BoxIcon, TagIcon, UsersIcon } from 'lucide-react';
+import { BoxIcon, TagIcon, UsersIcon, LayoutDashboardIcon, SettingsIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -21,6 +21,11 @@ import DashboardUserButton from './dashboard-user-button';
 import { authClient } from '@/lib/auth-client';
 
 const mainSection = [
+	{
+		icon: LayoutDashboardIcon,
+		label: 'Dashboard',
+		href: '/admin',
+	},
 	{
 		icon: BoxIcon,
 		label: 'Products',
@@ -38,6 +43,11 @@ const adminSection = [
 		icon: UsersIcon,
 		label: 'User Management',
 		href: '/admin/users',
+	},
+	{
+		icon: SettingsIcon,
+		label: 'Company Settings',
+		href: '/admin/settings',
 	},
 ];
 
