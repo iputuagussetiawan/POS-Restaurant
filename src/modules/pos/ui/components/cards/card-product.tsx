@@ -19,7 +19,6 @@ function formatUSD(amount: number) {
 
 const CardProduct = ({ data }: CardProductProps) => {
 	const addItem = useCartStore((s) => s.addItem);
-	const removeItem = useCartStore((s) => s.removeItem);
 	const updateQuantity = useCartStore((s) => s.updateQuantity);
 	const cartItem = useCartStore((s) => s.items.find((i) => i.product.id === data?.id));
 	const qty = cartItem?.quantity ?? 0;
@@ -27,36 +26,39 @@ const CardProduct = ({ data }: CardProductProps) => {
 	if (!data) return null;
 
 	return (
-		<div className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-green-200 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
-			{/* Image area */}
-			<div className="relative flex h-40 items-center justify-center bg-gray-50 p-4">
+		<div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(0,0,0,0.13)]">
+			{/* Image */}
+			<div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
 				<Image
 					src={data.imageUrl}
 					alt={data.name}
-					width={200}
-					height={200}
+					fill
+					sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
 					quality={90}
-					className="h-32 w-32 rounded-full object-cover transition-transform duration-300 group-hover:scale-105"
+					className="object-cover transition-transform duration-500 group-hover:scale-110"
 				/>
+				{/* dark overlay on hover */}
+				<div className="absolute inset-0 bg-black/0 transition-all duration-300 group-hover:bg-black/10" />
+
 				{/* qty badge */}
 				{qty > 0 && (
-					<span className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white shadow">
+					<span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white ring-2 ring-white">
 						{qty}
 					</span>
 				)}
-				{/* availability dot */}
-				<span className="absolute top-3 left-3 flex h-2 w-2 rounded-full bg-green-500" />
+
+				{/* category chip */}
+				<span className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white capitalize backdrop-blur-sm">
+					{data.categories?.name ?? 'Food'}
+				</span>
 			</div>
 
 			{/* Info */}
-			<div className="flex flex-1 flex-col gap-1 px-3 pt-2 pb-3">
-				<h3 className="line-clamp-2 text-sm leading-tight font-semibold text-gray-800">
+			<div className="flex flex-1 flex-col px-3 pt-2.5 pb-3">
+				<h3 className="line-clamp-2 text-xs leading-snug font-semibold text-gray-800 transition-colors duration-200 group-hover:text-green-700">
 					{data.name}
 				</h3>
-				<p className="text-xs text-gray-400 capitalize">
-					{data.categories?.name ?? 'Uncategorized'}
-				</p>
-				<p className="mt-auto pt-2 text-sm font-bold text-green-700">
+				<p className="mt-1.5 text-sm font-bold text-green-700">
 					{formatUSD(Number(data.price))}
 				</p>
 			</div>
@@ -66,27 +68,27 @@ const CardProduct = ({ data }: CardProductProps) => {
 				{qty === 0 ? (
 					<button
 						onClick={() => addItem(data)}
-						className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-green-600 py-2 text-xs font-semibold text-white transition-all hover:bg-green-700 active:scale-95"
+						className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-green-600 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-green-700 active:scale-95"
 					>
-						<ShoppingCartIcon className="h-3.5 w-3.5" />
+						<ShoppingCartIcon className="h-3 w-3" />
 						Add to order
 					</button>
 				) : (
-					<div className="flex items-center justify-between rounded-xl border border-green-200 bg-green-50 px-2 py-1">
+					<div className="flex items-center justify-between gap-1 rounded-xl border border-green-200 bg-green-50 px-1.5 py-1">
 						<button
 							onClick={() => updateQuantity(data.id, qty - 1)}
-							className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-green-700 shadow-sm transition-colors hover:bg-green-100 active:scale-95"
+							className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-green-700 shadow-sm transition-all hover:bg-green-100 active:scale-90"
 						>
-							<MinusIcon className="h-3.5 w-3.5" />
+							<MinusIcon className="h-3 w-3" />
 						</button>
-						<span className="min-w-[1.5rem] text-center text-sm font-bold text-green-800">
+						<span className="min-w-[1.5rem] text-center text-xs font-bold text-green-800">
 							{qty}
 						</span>
 						<button
 							onClick={() => addItem(data)}
-							className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm transition-colors hover:bg-green-700 active:scale-95"
+							className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm transition-all hover:bg-green-700 active:scale-90"
 						>
-							<PlusIcon className="h-3.5 w-3.5" />
+							<PlusIcon className="h-3 w-3" />
 						</button>
 					</div>
 				)}

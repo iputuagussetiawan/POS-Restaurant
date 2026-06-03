@@ -86,7 +86,7 @@ const PosView = () => {
 			{/* Right: cart */}
 			<div className="flex w-[320px] shrink-0 flex-col overflow-hidden rounded-2xl bg-gray-900 shadow-lg">
 				{/* Cart header */}
-				<div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+				<div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
 					<div className="flex items-center gap-2">
 						<ShoppingCartIcon className="h-5 w-5 text-green-400" />
 						<h3 className="text-base font-semibold text-white">Current Order</h3>
@@ -106,74 +106,84 @@ const PosView = () => {
 					)}
 				</div>
 
-				{/* Cart items */}
-				<ScrollArea className="flex-1 px-4 py-3">
-					{items.length === 0 ? (
-						<div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-							<ShoppingCartIcon className="h-10 w-10 text-white/20" />
-							<p className="text-sm text-white/40">Cart is empty</p>
-							<p className="text-xs text-white/25">Click a product to add it</p>
-						</div>
-					) : (
-						<div className="flex flex-col gap-3">
-							{items.map(({ product, quantity }) => (
-								<div
-									key={product.id}
-									className="flex gap-3 rounded-xl bg-white/8 p-3 transition-colors hover:bg-white/12"
-								>
-									<Image
-										className="shrink-0 rounded-lg object-cover"
-										src={product.imageUrl}
-										alt={product.name}
-										width={52}
-										height={52}
-									/>
-									<div className="flex min-w-0 flex-1 flex-col justify-between">
-										<p className="truncate text-xs leading-tight font-semibold text-white">
-											{product.name}
-										</p>
-										<p className="mt-1 text-xs font-bold text-green-400">
-											{formatUSD(Number(product.price))}
-										</p>
-										<div className="mt-2 flex items-center gap-2">
-											<button
-												onClick={() =>
-													updateQuantity(product.id, quantity - 1)
-												}
-												className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-											>
-												<MinusIcon className="h-3 w-3" />
-											</button>
-											<span className="w-5 text-center text-xs font-bold text-white">
-												{quantity}
-											</span>
-											<button
-												onClick={() =>
-													updateQuantity(product.id, quantity + 1)
-												}
-												className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-											>
-												<PlusIcon className="h-3 w-3" />
-											</button>
-											<span className="ml-auto text-xs text-white/50">
-												{formatUSD(Number(product.price) * quantity)}
-											</span>
-										</div>
-									</div>
-									<button
-										onClick={() => removeItem(product.id)}
-										className="mt-0.5 self-start text-white/30 transition-colors hover:text-red-400"
+				{/* Cart items — scrollable, takes all remaining space */}
+				<ScrollArea className="min-h-0 flex-1">
+					<div className="px-4 py-3">
+						{items.length === 0 ? (
+							<div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+								<ShoppingCartIcon className="h-10 w-10 text-white/20" />
+								<p className="text-sm text-white/40">Cart is empty</p>
+								<p className="text-xs text-white/25">Click a product to add it</p>
+							</div>
+						) : (
+							<div className="flex flex-col gap-2">
+								{items.map(({ product, quantity }) => (
+									<div
+										key={product.id}
+										className="flex h-[72px] items-center gap-3 rounded-xl bg-white/8 px-3 transition-colors hover:bg-white/12"
 									>
-										<TrashIcon className="h-3.5 w-3.5" />
-									</button>
-								</div>
-							))}
-						</div>
-					)}
+										{/* Fixed image */}
+										<div className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-lg">
+											<Image
+												className="object-cover"
+												src={product.imageUrl}
+												alt={product.name}
+												fill
+												sizes="48px"
+											/>
+										</div>
+
+										{/* Info */}
+										<div className="flex min-w-0 flex-1 flex-col gap-0.5">
+											<p className="truncate text-xs leading-tight font-semibold text-white">
+												{product.name}
+											</p>
+											<p className="text-xs font-bold text-green-400">
+												{formatUSD(Number(product.price))}
+											</p>
+											{/* qty controls */}
+											<div className="mt-1 flex items-center gap-1.5">
+												<button
+													onClick={() =>
+														updateQuantity(product.id, quantity - 1)
+													}
+													className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+												>
+													<MinusIcon className="h-2.5 w-2.5" />
+												</button>
+												<span className="w-4 text-center text-xs font-bold text-white">
+													{quantity}
+												</span>
+												<button
+													onClick={() =>
+														updateQuantity(product.id, quantity + 1)
+													}
+													className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+												>
+													<PlusIcon className="h-2.5 w-2.5" />
+												</button>
+												<span className="ml-auto text-xs text-white/40">
+													{formatUSD(Number(product.price) * quantity)}
+												</span>
+											</div>
+										</div>
+
+										{/* Remove */}
+										<button
+											onClick={() => removeItem(product.id)}
+											className="shrink-0 text-white/30 transition-colors hover:text-red-400"
+										>
+											<TrashIcon className="h-3.5 w-3.5" />
+										</button>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
 				</ScrollArea>
 
 				{/* Payment summary */}
-				<div className="border-t border-white/10 bg-black/20 px-5 py-4">
+				<div className="shrink-0 border-t border-white/10 bg-black/20 px-5 py-4">
 					<h4 className="mb-3 text-xs font-semibold tracking-wider text-white/50 uppercase">
 						Payment Summary
 					</h4>
@@ -220,7 +230,7 @@ export const POSViewLoading = () => {
 
 				{/* Product grid */}
 				<div className="flex-1 overflow-hidden">
-					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
 						{Array.from({ length: 10 }).map((_, i) => (
 							<div
 								key={i}
