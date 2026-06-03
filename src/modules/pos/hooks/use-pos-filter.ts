@@ -5,6 +5,6 @@ export const usePOSFilters = () => {
 	return useQueryStates({
 		search: parseAsString.withDefault('').withOptions({ clearOnDefault: true }),
 		page: parseAsInteger.withDefault(DEFAULT_PAGE).withOptions({ clearOnDefault: true }),
-		categoryId: parseAsString.withDefault('').withOptions({ clearOnDefault: true }),
+		categorySlug: parseAsString.withDefault('').withOptions({ clearOnDefault: true }),
 	});
 };

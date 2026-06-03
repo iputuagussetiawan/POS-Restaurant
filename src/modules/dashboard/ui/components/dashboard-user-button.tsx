@@ -114,7 +114,7 @@ const DashboardUserButton = () => {
 					</DrawerHeader>
 					<DrawerFooter className="gap-y-2">
 						<Button variant="outline" className="justify-start gap-x-2" asChild>
-							<Link href="/profile">
+							<Link href="/user/profile">
 								<UserIcon className="size-4" /> Profile
 							</Link>
 						</Button>
@@ -168,7 +168,7 @@ const DashboardUserButton = () => {
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild className="cursor-pointer gap-x-2">
-					<Link href="/profile">
+					<Link href="/user/profile">
 						<UserIcon className="size-4 text-muted-foreground" /> Profile
 					</Link>
 				</DropdownMenuItem>

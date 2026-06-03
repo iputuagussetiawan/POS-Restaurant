@@ -127,7 +127,7 @@ const LandingUserButton = ({ user }: Props) => {
 				</DropdownMenuItem>
 
 				<DropdownMenuItem asChild>
-					<Link href="/profile" className="flex cursor-pointer items-center gap-x-2">
+					<Link href="/user/profile" className="flex cursor-pointer items-center gap-x-2">
 						<UserIcon className="size-4 text-muted-foreground" />
 						Profile
 					</Link>

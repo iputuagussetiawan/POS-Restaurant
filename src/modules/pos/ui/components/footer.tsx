@@ -1,4 +1,3 @@
-import { date } from 'drizzle-orm/mysql-core';
 import React from 'react';
 
 const FooterPOS = () => {

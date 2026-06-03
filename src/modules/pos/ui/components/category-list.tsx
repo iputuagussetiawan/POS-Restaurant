@@ -80,8 +80,8 @@ const CategoryListSuspense = () => {
 									name: 'All',
 									imageUrl: '',
 								}}
-								onSelect={(value) => setFilters({ categoryId: value })}
-								selectedValue={filters.categoryId ?? ''}
+								onSelect={(value) => setFilters({ categorySlug: value })}
+								selectedValue={filters.categorySlug ?? ''}
 								className="min-h-[38px] min-w-[80px] text-center"
 							/>
 						</CarouselItem>
@@ -99,9 +99,9 @@ const CategoryListSuspense = () => {
 							<CarouselItem className="basis-auto pl-3" key={category.id}>
 								<CardCategory
 									key={category.id}
-									category={category}
-									onSelect={(value) => setFilters({ categoryId: value })}
-									selectedValue={filters.categoryId ?? ''}
+									category={{ ...category, id: category.slug }}
+									onSelect={(value) => setFilters({ categorySlug: value })}
+									selectedValue={filters.categorySlug ?? ''}
 								/>
 							</CarouselItem>
 						))}
