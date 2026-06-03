@@ -65,7 +65,7 @@ const RowActions = ({ row }: { row: ProductGetMany[number] }) => {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-					<DropdownMenuItem onClick={() => router.push(`/products/${row.id}`)}>
+					<DropdownMenuItem onClick={() => router.push(`/admin/products/${row.id}`)}>
 						<EyeIcon className="mr-2 size-4" /> View details
 					</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => setEditOpen(true)}>

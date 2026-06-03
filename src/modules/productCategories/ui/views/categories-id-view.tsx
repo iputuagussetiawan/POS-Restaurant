@@ -30,7 +30,7 @@ const CategoriesIdView = ({ categoryId }: Props) => {
 		trpc.categories.remove.mutationOptions({
 			onSuccess: async () => {
 				await queryClient.invalidateQueries(trpc.categories.getMany.queryOptions({}));
-				router.push('/categories');
+				router.push('/admin/categories');
 			},
 			onError: (e) => toast.error(e.message),
 		})

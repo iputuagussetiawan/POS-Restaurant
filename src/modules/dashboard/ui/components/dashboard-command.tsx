@@ -106,13 +106,13 @@ const DashboardCommand = ({ open, setOpen }: Props) => {
 							{[
 								{
 									label: 'All Products',
-									href: '/products',
+									href: '/admin/products',
 									icon: BoxIcon,
 									color: 'bg-blue-50 text-blue-600',
 								},
 								{
 									label: 'Categories',
-									href: '/categories',
+									href: '/admin/categories',
 									icon: TagIcon,
 									color: 'bg-purple-50 text-purple-600',
 								},
@@ -170,7 +170,7 @@ const DashboardCommand = ({ open, setOpen }: Props) => {
 							<CommandItem
 								key={product.id}
 								value={product.id}
-								onSelect={() => navigate(`/products/${product.id}`)}
+								onSelect={() => navigate(`/admin/products/${product.id}`)}
 								className="group mx-1 flex items-center gap-x-3 rounded-lg px-3 py-2.5"
 							>
 								<div className="relative size-11 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">
@@ -241,7 +241,7 @@ const DashboardCommand = ({ open, setOpen }: Props) => {
 							<CommandItem
 								key={category.id}
 								value={category.id}
-								onSelect={() => navigate(`/categories/${category.id}`)}
+								onSelect={() => navigate(`/admin/categories/${category.id}`)}
 								className="group mx-1 flex items-center gap-x-3 rounded-lg px-3 py-2.5"
 							>
 								<div className="relative size-11 shrink-0 overflow-hidden rounded-lg border bg-muted shadow-sm">

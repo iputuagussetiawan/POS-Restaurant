@@ -33,7 +33,7 @@ const ProductIdViewHeader = ({ productId, productName, onEdit, onRemove }: Props
 							asChild
 							className="text-sm font-medium text-muted-foreground"
 						>
-							<Link href="/products">My Products</Link>
+							<Link href="/admin/products">My Products</Link>
 						</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator className="[&>svg:size-4] text-sm font-medium text-foreground">
@@ -41,7 +41,7 @@ const ProductIdViewHeader = ({ productId, productName, onEdit, onRemove }: Props
 					</BreadcrumbSeparator>
 					<BreadcrumbItem>
 						<BreadcrumbLink asChild className="text-sm font-medium text-foreground">
-							<Link href={`/products/${productId}`}>{productName}</Link>
+							<Link href={`/admin/products/${productId}`}>{productName}</Link>
 						</BreadcrumbLink>
 					</BreadcrumbItem>
 				</BreadcrumbList>

@@ -32,7 +32,7 @@ const ProductIdView = ({ productId }: Props) => {
 		trpc.products.remove.mutationOptions({
 			onSuccess: async () => {
 				await queryClient.invalidateQueries(trpc.products.getMany.queryOptions({}));
-				router.push('/products');
+				router.push('/admin/products');
 			},
 			onError: (e) => toast.error(e.message),
 		})

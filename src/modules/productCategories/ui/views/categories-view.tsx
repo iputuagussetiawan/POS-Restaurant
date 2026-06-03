@@ -80,7 +80,7 @@ export const CategoriesView = () => {
 					<DataTable
 						data={data.items}
 						columns={columns}
-						onRowClick={(row) => router.push(`/categories/${row.id}`)}
+						onRowClick={(row) => router.push(`/admin/categories/${row.id}`)}
 					/>
 					<DataPagination
 						page={filters.page}

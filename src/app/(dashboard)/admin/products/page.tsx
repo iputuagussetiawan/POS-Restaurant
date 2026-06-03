@@ -1,7 +1,11 @@
 import { auth } from '@/lib/auth';
 import { loadSearchParams } from '@/modules/products/params';
 import ProductListHeader from '@/modules/products/ui/components/product-list-header';
-import { ProductView, ProductViewError, ProductViewLoading } from '@/modules/products/ui/views/product-view';
+import {
+	ProductView,
+	ProductViewError,
+	ProductViewLoading,
+} from '@/modules/products/ui/views/product-view';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { headers } from 'next/headers';

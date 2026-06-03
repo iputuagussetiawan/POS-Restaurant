@@ -80,7 +80,7 @@ export const ProductView = () => {
 					<DataTable
 						data={data.items}
 						columns={columns}
-						onRowClick={(row) => router.push(`/products/${row.id}`)}
+						onRowClick={(row) => router.push(`/admin/products/${row.id}`)}
 					/>
 					<DataPagination
 						page={filters.page}

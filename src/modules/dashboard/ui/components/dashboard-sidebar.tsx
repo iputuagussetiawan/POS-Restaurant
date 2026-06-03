@@ -24,12 +24,12 @@ const mainSection = [
 	{
 		icon: BoxIcon,
 		label: 'Products',
-		href: '/products',
+		href: '/admin/products',
 	},
 	{
 		icon: TagIcon,
 		label: 'Product Categories',
-		href: '/categories',
+		href: '/admin/categories',
 	},
 ];
 

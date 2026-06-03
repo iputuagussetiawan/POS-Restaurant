@@ -32,7 +32,7 @@ const CategoriesIdViewHeader = ({ categoryId, categoryName, onEdit, onRemove }: 
 							asChild
 							className="text-sm font-medium text-muted-foreground"
 						>
-							<Link href={'/categories'}>My Categories</Link>
+							<Link href={'/admin/categories'}>My Categories</Link>
 						</BreadcrumbLink>
 					</BreadcrumbItem>
 					<BreadcrumbSeparator className="[&>svg:size-4] text-sm font-medium text-foreground">
