@@ -42,9 +42,10 @@ const CardProduct = ({ data }: CardProductProps) => {
 
 				{/* qty badge */}
 				{qty > 0 && (
-					<span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-green-600 text-xs font-bold text-white ring-2 ring-white">
-						{qty}
-					</span>
+					<div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-green-600 py-0.5 pr-2 pl-1.5 shadow-md ring-2 ring-white">
+						<ShoppingCartIcon className="h-2.5 w-2.5 text-white" />
+						<span className="text-[10px] leading-none font-bold text-white">{qty}</span>
+					</div>
 				)}
 
 				{/* category chip */}
@@ -70,23 +71,26 @@ const CardProduct = ({ data }: CardProductProps) => {
 						onClick={() => addItem(data)}
 						className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-green-600 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:bg-green-700 active:scale-95"
 					>
-						<ShoppingCartIcon className="h-3 w-3" />
+						<ShoppingCartIcon className="h-3.5 w-3.5" />
 						Add to order
 					</button>
 				) : (
-					<div className="flex items-center justify-between gap-1 rounded-xl border border-green-200 bg-green-50 px-1.5 py-1">
+					<div className="flex items-center justify-between rounded-xl bg-green-600 p-0.5">
 						<button
 							onClick={() => updateQuantity(data.id, qty - 1)}
-							className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-green-700 shadow-sm transition-all hover:bg-green-100 active:scale-90"
+							className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white backdrop-blur-sm transition-all hover:bg-white/30 active:scale-90"
 						>
 							<MinusIcon className="h-3 w-3" />
 						</button>
-						<span className="min-w-[1.5rem] text-center text-xs font-bold text-green-800">
-							{qty}
-						</span>
+						<div className="flex items-center gap-1.5">
+							<ShoppingCartIcon className="h-3 w-3 text-white/80" />
+							<span className="min-w-[1rem] text-center text-xs font-bold text-white">
+								{qty}
+							</span>
+						</div>
 						<button
 							onClick={() => addItem(data)}
-							className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm transition-all hover:bg-green-700 active:scale-90"
+							className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/20 text-white backdrop-blur-sm transition-all hover:bg-white/30 active:scale-90"
 						>
 							<PlusIcon className="h-3 w-3" />
 						</button>

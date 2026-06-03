@@ -70,6 +70,6 @@ export const useCartStore = create<CartStore>()(
 				return sub + sub * TAX_RATE;
 			},
 		}),
-		{ name: 'pos-cart' }
+		{ name: 'pos-cart', version: 2 }
 	)
 );

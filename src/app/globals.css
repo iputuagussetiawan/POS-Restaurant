@@ -3,6 +3,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@media print {
+	body > * {
+		display: none !important;
+	}
+	#receipt {
+		display: block !important;
+	}
+	* {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+}
+
 /* ── TipTap editor content styles ── */
 .tiptap {
 	outline: none;

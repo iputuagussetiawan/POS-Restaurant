@@ -1,10 +1,20 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { MinusIcon, PlusIcon, ShoppingCartIcon, TrashIcon } from 'lucide-react';
+import {
+	MinusIcon,
+	PlusIcon,
+	ShoppingCartIcon,
+	TrashIcon,
+	CheckCircleIcon,
+	Loader2Icon,
+} from 'lucide-react';
+import PaymentModal from '@/modules/pos/ui/components/payment-modal';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import ProductSearch from '@/modules/pos/ui/components/product-search';
 import CategoryList from '@/modules/pos/ui/components/category-list';
 import ProductList from '@/modules/pos/ui/components/product-list';
@@ -44,6 +54,54 @@ const PosView = () => {
 	const tax = subtotal * TAX_RATE;
 	const total = subtotal + tax;
 	const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
+
+	const [paymentOpen, setPaymentOpen] = React.useState(false);
+
+	const placeOrder = useMutation(
+		trpc.orders.place.mutationOptions({
+			onSuccess: () => {
+				clearCart();
+				setPaymentOpen(false);
+				toast.success('Order placed successfully!', {
+					description: `${totalQty} item${totalQty !== 1 ? 's' : ''} · ${formatUSD(total)}`,
+					icon: <CheckCircleIcon className="h-4 w-4 text-green-500" />,
+				});
+			},
+			onError: (err) => {
+				toast.error('Failed to place order', { description: err.message });
+			},
+		})
+	);
+
+	const handlePlaceOrder = () => {
+		if (items.length === 0) return;
+		setPaymentOpen(true);
+	};
+
+	const handleConfirmPayment = ({
+		paymentMethod,
+		customerName,
+		customerId,
+		note,
+	}: {
+		paymentMethod: 'cash' | 'card' | 'qris' | 'transfer';
+		customerName: string;
+		customerId?: string;
+		note: string;
+	}) => {
+		placeOrder.mutate({
+			items: items.map(({ product, quantity }) => ({
+				productId: product.id,
+				name: product.name,
+				price: Number(product.price),
+				quantity,
+			})),
+			paymentMethod,
+			customerName: customerName || undefined,
+			customerId: customerId || undefined,
+			note: note || undefined,
+		});
+	};
 
 	return (
 		<div className="flex h-[calc(100vh-57px)] gap-4 overflow-hidden bg-muted p-4">
@@ -203,13 +261,34 @@ const PosView = () => {
 						<span className="text-green-400">{formatUSD(total)}</span>
 					</div>
 					<Button
-						className="mt-4 w-full bg-green-600 font-semibold text-white transition-colors hover:bg-green-500"
-						disabled={items.length === 0}
+						onClick={handlePlaceOrder}
+						disabled={items.length === 0 || placeOrder.isPending}
+						className="mt-4 w-full bg-green-600 font-semibold text-white transition-colors hover:bg-green-500 disabled:opacity-60"
 					>
-						Place Order
+						{placeOrder.isPending ? (
+							<>
+								<Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+								Placing Order...
+							</>
+						) : (
+							<>
+								<CheckCircleIcon className="mr-2 h-4 w-4" />
+								Place Order · {formatUSD(total)}
+							</>
+						)}
 					</Button>
 				</div>
 			</div>
+
+			<PaymentModal
+				open={paymentOpen}
+				onClose={() => setPaymentOpen(false)}
+				onConfirm={handleConfirmPayment}
+				isPending={placeOrder.isPending}
+				subtotal={subtotal}
+				tax={tax}
+				total={total}
+			/>
 		</div>
 	);
 };
@@ -231,17 +310,22 @@ export const POSViewLoading = () => {
 				{/* Product grid */}
 				<div className="flex-1 overflow-hidden">
 					<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-						{Array.from({ length: 10 }).map((_, i) => (
+						{Array.from({ length: 12 }).map((_, i) => (
 							<div
 								key={i}
-								className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white"
+								className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)]"
 							>
-								<Skeleton className="h-40 w-full rounded-none" />
-								<div className="flex flex-col gap-2 p-3">
-									<Skeleton className="h-4 w-3/4 rounded" />
-									<Skeleton className="h-3 w-1/2 rounded" />
-									<Skeleton className="mt-1 h-4 w-1/3 rounded" />
-									<Skeleton className="mt-1 h-8 w-full rounded-xl" />
+								{/* image area */}
+								<div className="relative h-36 w-full overflow-hidden bg-gray-100">
+									<Skeleton className="h-full w-full rounded-none" />
+									{/* category chip placeholder */}
+									<Skeleton className="absolute bottom-2 left-2 h-4 w-14 rounded-full" />
+								</div>
+								{/* info */}
+								<div className="flex flex-col gap-1.5 px-3 pt-2.5 pb-3">
+									<Skeleton className="h-3.5 w-4/5 rounded" />
+									<Skeleton className="h-3 w-2/5 rounded" />
+									<Skeleton className="mt-1 h-6 w-full rounded-xl" />
 								</div>
 							</div>
 						))}

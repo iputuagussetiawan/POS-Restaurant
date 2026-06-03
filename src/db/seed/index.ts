@@ -3,9 +3,10 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { nanoid } from 'nanoid';
 import { hashPassword } from 'better-auth/crypto';
-import { categories, products, user, account } from '../schema';
+import { categories, products, user, account, customers } from '../schema';
 import { categoriesData } from './data/categories';
 import { usersData } from './data/users';
+import { customersData } from './data/customers';
 import { appetizers } from './data/products/appetizers';
 import { mainCourses } from './data/products/main-courses';
 import { desserts } from './data/products/desserts';
@@ -141,6 +142,23 @@ async function main() {
 				console.log(`     ↳ ${productItems.length} products inserted`);
 			}
 		}
+
+		// ── Customers ────────────────────────────────────────────
+		console.log('\n👥 Seeding customers...');
+		await db.delete(customers);
+
+		for (const c of customersData) {
+			await db.insert(customers).values({
+				id: nanoid(),
+				name: c.name,
+				phone: c.phone,
+				email: c.email ?? null,
+				points: c.points,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+		}
+		console.log(`  ✅ ${customersData.length} customers inserted`);
 
 		console.log('\n✅ Seeding completed!');
 	} catch (err) {
