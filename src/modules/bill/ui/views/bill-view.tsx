@@ -137,40 +137,63 @@ const BillView = () => {
 									className="h-16 animate-pulse rounded-xl bg-white/60"
 								/>
 							))}
-						{recent?.items.map((o) => (
-							<button
-								key={o.id}
-								onClick={() => handleSearch(o.id)}
-								className={cn(
-									'flex items-center gap-3 rounded-xl border bg-white px-3 py-2.5 text-left transition-all hover:border-green-400 hover:shadow-sm',
-									searchId && o.id.startsWith(searchId.toLowerCase())
-										? 'border-green-500 bg-green-50'
-										: 'border-gray-100'
-								)}
-							>
-								<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100">
-									<ReceiptIcon className="h-4 w-4 text-gray-500" />
-								</div>
-								<div className="min-w-0 flex-1">
-									<p className="font-mono text-xs font-bold text-gray-800">
-										#{o.id.slice(0, 8).toUpperCase()}
-									</p>
-									<p className="text-[10px] text-gray-400">
-										{format(new Date(o.createdAt), 'dd MMM, HH:mm')} ·{' '}
-										{formatUSD(o.total)}
-									</p>
-								</div>
-								<OrderStatusBadge
-									status={
-										o.status as
-											| 'pending'
-											| 'processing'
-											| 'completed'
-											| 'cancelled'
-									}
-								/>
-							</button>
-						))}
+						{recent?.items.map((o) => {
+							const isSelected = searchId === o.id;
+							return (
+								<button
+									key={o.id}
+									onClick={() => handleSearch(o.id)}
+									className={cn(
+										'flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all duration-150',
+										isSelected
+											? 'border-green-600 bg-green-700 shadow-md'
+											: 'border-gray-100 bg-white hover:border-green-300 hover:bg-green-50 hover:shadow-sm'
+									)}
+								>
+									<div
+										className={cn(
+											'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+											isSelected ? 'bg-white/20' : 'bg-gray-100'
+										)}
+									>
+										<ReceiptIcon
+											className={cn(
+												'h-4 w-4',
+												isSelected ? 'text-white' : 'text-gray-500'
+											)}
+										/>
+									</div>
+									<div className="min-w-0 flex-1">
+										<p
+											className={cn(
+												'font-mono text-xs font-bold',
+												isSelected ? 'text-white' : 'text-gray-800'
+											)}
+										>
+											#{o.id.slice(0, 8).toUpperCase()}
+										</p>
+										<p
+											className={cn(
+												'text-[10px]',
+												isSelected ? 'text-green-200' : 'text-gray-400'
+											)}
+										>
+											{format(new Date(o.createdAt), 'dd MMM, HH:mm')} ·{' '}
+											{formatUSD(o.total)}
+										</p>
+									</div>
+									<OrderStatusBadge
+										status={
+											o.status as
+												| 'pending'
+												| 'processing'
+												| 'completed'
+												| 'cancelled'
+										}
+									/>
+								</button>
+							);
+						})}
 					</div>
 				</div>
 
