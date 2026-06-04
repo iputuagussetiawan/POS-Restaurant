@@ -98,6 +98,7 @@ type Order = {
 	status: string;
 	subtotal: string;
 	tax: string;
+	serviceCharge: string;
 	total: string;
 	note?: string | null;
 	paymentMethod?: string | null;
@@ -219,10 +220,16 @@ const OrderCard = ({
 					<p className="mt-0.5 text-2xl font-bold text-gray-900">
 						{formatCurrency(order.total)}
 					</p>
-					<div className="mt-1.5 flex items-center gap-3 text-xs text-gray-400">
+					<div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400">
 						<span>Sub {formatCurrency(order.subtotal)}</span>
 						<span className="h-1 w-1 rounded-full bg-gray-300" />
 						<span>Tax {formatCurrency(order.tax)}</span>
+						{Number(order.serviceCharge) > 0 && (
+							<>
+								<span className="h-1 w-1 rounded-full bg-gray-300" />
+								<span>Svc {formatCurrency(order.serviceCharge)}</span>
+							</>
+						)}
 					</div>
 				</div>
 
@@ -375,8 +382,13 @@ const OrderRow = ({
 			<TableCell className="px-4 py-3 text-xs text-gray-500">
 				{order.itemCount ?? 0} item{(order.itemCount ?? 0) !== 1 ? 's' : ''}
 			</TableCell>
-			<TableCell className="px-4 py-3 text-sm font-bold text-green-700">
-				{formatCurrency(order.total)}
+			<TableCell className="px-4 py-3">
+				<p className="text-sm font-bold text-green-700">{formatCurrency(order.total)}</p>
+				{Number(order.serviceCharge) > 0 && (
+					<p className="text-[10px] text-gray-400">
+						Svc {formatCurrency(order.serviceCharge)}
+					</p>
+				)}
 			</TableCell>
 			<TableCell className="px-4 py-3">
 				<OrderStatusBadge
@@ -403,7 +415,7 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 			page: filters.page,
 			status: filters.status ?? undefined,
 			search: filters.search || undefined,
-			date: filters.date ? filters.date.toISOString().split('T')[0] : undefined,
+			date: (filters.date ?? new Date()).toISOString().split('T')[0],
 		})
 	);
 
