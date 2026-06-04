@@ -23,6 +23,7 @@ import { useTRPC } from '@/trpc/client';
 import { useQuery } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/use-debounce';
 import { authClient } from '@/lib/auth-client';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 type PaymentMethod = 'cash' | 'card' | 'qris' | 'transfer';
 
@@ -38,6 +39,9 @@ interface PaymentModalProps {
 	isPending: boolean;
 	subtotal: number;
 	tax: number;
+	taxRate: number;
+	serviceCharge: number;
+	serviceRate: number;
 	total: number;
 }
 
@@ -58,14 +62,6 @@ const PAYMENT_METHODS: {
 	},
 ];
 
-function formatUSD(n: number) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(n);
-}
-
 const PaymentModal = ({
 	open,
 	onClose,
@@ -73,9 +69,13 @@ const PaymentModal = ({
 	isPending,
 	subtotal,
 	tax,
+	taxRate,
+	serviceCharge,
+	serviceRate,
 	total,
 }: PaymentModalProps) => {
 	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
 	const { data: session } = authClient.useSession();
 
 	const [method, setMethod] = useState<PaymentMethod>('cash');
@@ -135,16 +135,22 @@ const PaymentModal = ({
 					<div className="space-y-2 rounded-xl bg-gray-50 px-4 py-3">
 						<div className="flex justify-between text-sm text-gray-500">
 							<span>Subtotal</span>
-							<span>{formatUSD(subtotal)}</span>
+							<span>{formatCurrency(subtotal)}</span>
 						</div>
 						<div className="flex justify-between text-sm text-gray-500">
-							<span>Tax (10%)</span>
-							<span>{formatUSD(tax)}</span>
+							<span>Tax ({taxRate}%)</span>
+							<span>{formatCurrency(tax)}</span>
 						</div>
+						{serviceRate > 0 && (
+							<div className="flex justify-between text-sm text-gray-500">
+								<span>Service ({serviceRate}%)</span>
+								<span>{formatCurrency(serviceCharge)}</span>
+							</div>
+						)}
 						<Separator className="my-1" />
 						<div className="flex justify-between text-base font-bold">
 							<span className="text-gray-900">Total</span>
-							<span className="text-green-700">{formatUSD(total)}</span>
+							<span className="text-green-700">{formatCurrency(total)}</span>
 						</div>
 					</div>
 
@@ -325,7 +331,7 @@ const PaymentModal = ({
 						) : (
 							<>
 								<CheckCircleIcon className="mr-2 h-4 w-4" />
-								Confirm · {formatUSD(total)}
+								Confirm · {formatCurrency(total)}
 							</>
 						)}
 					</Button>

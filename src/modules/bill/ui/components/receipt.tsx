@@ -36,6 +36,7 @@ import { useState } from 'react';
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 type PaymentMethod = 'cash' | 'card' | 'qris' | 'transfer';
 
@@ -59,19 +60,12 @@ const PAYMENT_LABEL: Record<string, string> = {
 	transfer: 'Bank Transfer',
 };
 
-function formatUSD(n: number | string) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(Number(n));
-}
-
 type OrderFull = {
 	id: string;
 	status: string;
 	subtotal: string;
 	tax: string;
+	serviceCharge: string;
 	total: string;
 	note?: string | null;
 	paymentMethod?: string | null;
@@ -105,6 +99,10 @@ const Receipt = ({ order }: ReceiptProps) => {
 	const companyName = company?.name ?? 'FoodOrder';
 	const receiptFooter = company?.receiptFooter ?? '© FoodOrder · Green Line Software';
 	const logoUrl = company?.logoUrl ?? null;
+	const taxRate = Number(company?.taxRate ?? 10);
+	const serviceRate = Number(company?.serviceRate ?? 0);
+
+	const { format: formatCurrency } = useCurrency();
 
 	const isMember = !!order.customerId && !!order.customerName2;
 	const displayCustomer = order.customerName2 ?? order.customerName ?? 'Walk-in Customer';
@@ -379,11 +377,11 @@ const Receipt = ({ order }: ReceiptProps) => {
 											{item.name}
 										</p>
 										<p className="text-xs text-gray-400">
-											{formatUSD(item.price)} × {item.quantity}
+											{formatCurrency(item.price)} × {item.quantity}
 										</p>
 									</div>
 									<p className="shrink-0 text-sm font-semibold text-gray-800">
-										{formatUSD(item.subtotal)}
+										{formatCurrency(item.subtotal)}
 									</p>
 								</div>
 							</div>
@@ -396,15 +394,21 @@ const Receipt = ({ order }: ReceiptProps) => {
 					<div className="space-y-2">
 						<div className="flex justify-between text-sm text-gray-500">
 							<span>Subtotal</span>
-							<span>{formatUSD(order.subtotal)}</span>
+							<span>{formatCurrency(order.subtotal)}</span>
 						</div>
 						<div className="flex justify-between text-sm text-gray-500">
-							<span>Tax (10%)</span>
-							<span>{formatUSD(order.tax)}</span>
+							<span>Tax ({taxRate}%)</span>
+							<span>{formatCurrency(order.tax)}</span>
 						</div>
-						<div className="flex justify-between pt-1 text-base font-bold text-gray-900">
+						{Number(order.serviceCharge) > 0 && (
+							<div className="flex justify-between text-sm text-gray-500">
+								<span>Service ({serviceRate}%)</span>
+								<span>{formatCurrency(order.serviceCharge)}</span>
+							</div>
+						)}
+						<div className="flex justify-between border-t pt-2 text-base font-bold text-gray-900">
 							<span>Total</span>
-							<span className="text-green-700">{formatUSD(order.total)}</span>
+							<span className="text-green-700">{formatCurrency(order.total)}</span>
 						</div>
 					</div>
 

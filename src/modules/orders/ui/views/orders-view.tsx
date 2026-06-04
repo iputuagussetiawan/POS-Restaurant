@@ -45,16 +45,9 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 type ViewMode = 'grid' | 'table';
-
-function formatUSD(amount: number | string) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(Number(amount));
-}
 
 const STATUS_ICON: Record<string, { icon: React.ElementType; bg: string; color: string }> = {
 	pending: { icon: ClockIcon, bg: 'bg-yellow-100', color: 'text-yellow-600' },
@@ -181,6 +174,7 @@ const OrderCard = ({
 	onUpdate: (id: string, status: string) => void;
 	isPending?: boolean;
 }) => {
+	const { format: formatCurrency } = useCurrency();
 	const cfg = STATUS_ICON[order.status] ?? STATUS_ICON.pending;
 	const Icon = cfg.icon;
 	const gradient = GRADIENT[order.status] ?? GRADIENT.pending;
@@ -223,12 +217,12 @@ const OrderCard = ({
 						Total
 					</p>
 					<p className="mt-0.5 text-2xl font-bold text-gray-900">
-						{formatUSD(order.total)}
+						{formatCurrency(order.total)}
 					</p>
 					<div className="mt-1.5 flex items-center gap-3 text-xs text-gray-400">
-						<span>Sub {formatUSD(order.subtotal)}</span>
+						<span>Sub {formatCurrency(order.subtotal)}</span>
 						<span className="h-1 w-1 rounded-full bg-gray-300" />
-						<span>Tax {formatUSD(order.tax)}</span>
+						<span>Tax {formatCurrency(order.tax)}</span>
 					</div>
 				</div>
 
@@ -316,6 +310,7 @@ const OrderRow = ({
 	onUpdate: (id: string, status: string) => void;
 	isPending?: boolean;
 }) => {
+	const { format: formatCurrency } = useCurrency();
 	const cfg = STATUS_ICON[order.status] ?? STATUS_ICON.pending;
 	const Icon = cfg.icon;
 	const PayIcon = order.paymentMethod ? PAYMENT_ICON[order.paymentMethod] : null;
@@ -381,7 +376,7 @@ const OrderRow = ({
 				{order.itemCount ?? 0} item{(order.itemCount ?? 0) !== 1 ? 's' : ''}
 			</TableCell>
 			<TableCell className="px-4 py-3 text-sm font-bold text-green-700">
-				{formatUSD(order.total)}
+				{formatCurrency(order.total)}
 			</TableCell>
 			<TableCell className="px-4 py-3">
 				<OrderStatusBadge
@@ -398,6 +393,7 @@ const OrderRow = ({
 /* ── Main content ───────────────────────────────────────────────────────── */
 const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
 	const queryClient = useQueryClient();
 	const [filters, setFilters] = useOrdersFilters();
 	const [updatingId, setUpdatingId] = useState<string | null>(null);

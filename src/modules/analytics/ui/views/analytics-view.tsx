@@ -1,7 +1,7 @@
 'use client';
 
 import { useTRPC } from '@/trpc/client';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useSuspenseQuery, useQuery } from '@tanstack/react-query';
 import {
 	TrendingUpIcon,
 	ShoppingCartIcon,
@@ -40,15 +40,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorState from '@/components/error-state';
-
-function formatUSD(n: number | string) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 0,
-		maximumFractionDigits: 0,
-	}).format(Number(n));
-}
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 function pct(a: number, b: number) {
 	if (b === 0) return null;
@@ -125,6 +117,7 @@ const KpiCard = ({
 /* ── Main analytics content ─────────────────────────────────────────────── */
 const AnalyticsContent = () => {
 	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
 
 	const { data: summary } = useSuspenseQuery(trpc.analytics.summary.queryOptions());
 	const { data: revenueByDay } = useSuspenseQuery(trpc.analytics.revenueByDay.queryOptions());
@@ -179,7 +172,7 @@ const AnalyticsContent = () => {
 			<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
 				<KpiCard
 					title="Today's Revenue"
-					value={formatUSD(summary.today.revenue)}
+					value={formatCurrency(summary.today.revenue)}
 					sub={`${summary.today.orderCount} orders today`}
 					icon={TrendingUpIcon}
 					iconBg="bg-green-600"
@@ -195,7 +188,7 @@ const AnalyticsContent = () => {
 				/>
 				<KpiCard
 					title="30-Day Revenue"
-					value={formatUSD(summary.month.revenue)}
+					value={formatCurrency(summary.month.revenue)}
 					sub={`${summary.month.orderCount} orders`}
 					icon={TrendingUpIcon}
 					iconBg="bg-purple-600"
@@ -239,7 +232,7 @@ const AnalyticsContent = () => {
 								tickFormatter={(v) => `$${v}`}
 							/>
 							<Tooltip
-								formatter={(v: number) => [formatUSD(v), 'Revenue']}
+								formatter={(v: number) => [formatCurrency(v), 'Revenue']}
 								contentStyle={{
 									borderRadius: 12,
 									border: 'none',
@@ -427,7 +420,7 @@ const AnalyticsContent = () => {
 									</div>
 									<div className="flex flex-col items-end gap-1">
 										<p className="text-xs font-bold text-green-700">
-											{formatUSD(Number(o.total))}
+											{formatCurrency(Number(o.total))}
 										</p>
 										<OrderStatusBadge
 											status={

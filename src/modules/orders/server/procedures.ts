@@ -8,6 +8,7 @@ import {
 	products,
 	customers,
 	user,
+	companySettings,
 } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
 import { and, count, desc, eq, getTableColumns, gte, ilike, inArray, lt, sql } from 'drizzle-orm';
@@ -17,6 +18,56 @@ import {
 	MAX_PAGE_SIZE,
 	MIN_PAGE_SIZE,
 } from '../../../../constants';
+
+async function getSettings() {
+	const [s] = await db
+		.select({
+			taxRate: companySettings.taxRate,
+			serviceRate: companySettings.serviceRate,
+			timezone: companySettings.timezone,
+		})
+		.from(companySettings)
+		.where(eq(companySettings.id, 'default'));
+	return {
+		taxRate: Number(s?.taxRate ?? 10),
+		serviceRate: Number(s?.serviceRate ?? 0),
+		timezone: s?.timezone ?? 'UTC',
+	};
+}
+
+/**
+ * Returns the UTC Date objects for start and end of a calendar day
+ * as seen in the given IANA timezone.
+ *
+ * e.g. "2024-01-15" + "Asia/Makassar" (UTC+8)
+ *   → start = 2024-01-14T16:00:00Z, end = 2024-01-15T15:59:59.999Z
+ */
+function dayBoundsInTz(dateStr: string, timezone: string): { start: Date; end: Date } {
+	// Use noon UTC as a probe — avoids DST ambiguity at midnight
+	const noonUtc = new Date(`${dateStr}T12:00:00Z`);
+
+	// en-CA locale gives "YYYY-MM-DD, HH:MM:SS" — easy to parse back
+	const localStr = new Intl.DateTimeFormat('en-CA', {
+		timeZone: timezone,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hour12: false,
+	}).format(noonUtc);
+
+	// Parse the formatted local time as if it were UTC to compute the offset
+	const localAsUtcMs = new Date(localStr.replace(', ', 'T') + 'Z').getTime();
+	const offsetMs = localAsUtcMs - noonUtc.getTime(); // positive for UTC+ zones
+
+	// Midnight UTC on dateStr, shifted by the zone offset → midnight in target TZ
+	const midnightUtcMs = new Date(`${dateStr}T00:00:00Z`).getTime();
+	const start = new Date(midnightUtcMs - offsetMs);
+	const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
+	return { start, end };
+}
 
 const orderItemSchema = z.object({
 	productId: z.string(),
@@ -37,9 +88,11 @@ export const ordersRouter = createTRPCRouter({
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
+			const { taxRate, serviceRate } = await getSettings();
 			const subtotal = input.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-			const tax = subtotal * 0.1;
-			const total = subtotal + tax;
+			const tax = subtotal * (taxRate / 100);
+			const serviceCharge = subtotal * (serviceRate / 100);
+			const total = subtotal + tax + serviceCharge;
 
 			const [order] = await db
 				.insert(orders)
@@ -49,6 +102,7 @@ export const ordersRouter = createTRPCRouter({
 					customerId: input.customerId,
 					subtotal: String(subtotal.toFixed(2)),
 					tax: String(tax.toFixed(2)),
+					serviceCharge: String(serviceCharge.toFixed(2)),
 					total: String(total.toFixed(2)),
 					note: input.note,
 					paymentMethod: input.paymentMethod,
@@ -101,14 +155,14 @@ export const ordersRouter = createTRPCRouter({
 		)
 		.query(async ({ input, ctx }) => {
 			const { page, pageSize, status, search, date } = input;
+			const { timezone } = await getSettings();
 
 			let dayStart: Date | undefined;
 			let dayEnd: Date | undefined;
 			if (date) {
-				dayStart = new Date(date);
-				dayStart.setHours(0, 0, 0, 0);
-				dayEnd = new Date(date);
-				dayEnd.setHours(23, 59, 59, 999);
+				const bounds = dayBoundsInTz(date, timezone);
+				dayStart = bounds.start;
+				dayEnd = bounds.end;
 			}
 
 			const where = and(

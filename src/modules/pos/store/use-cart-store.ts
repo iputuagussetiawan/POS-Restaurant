@@ -14,10 +14,7 @@ interface CartStore {
 	updateQuantity: (productId: string, quantity: number) => void;
 	clearCart: () => void;
 	subtotal: () => number;
-	total: () => number;
 }
-
-const TAX_RATE = 0.1;
 
 export const useCartStore = create<CartStore>()(
 	persist(
@@ -63,11 +60,6 @@ export const useCartStore = create<CartStore>()(
 					(sum, i) => sum + Number(i.product.price) * i.quantity,
 					0
 				);
-			},
-
-			total: () => {
-				const sub = get().subtotal();
-				return sub + sub * TAX_RATE;
 			},
 		}),
 		{ name: 'pos-cart', version: 2 }

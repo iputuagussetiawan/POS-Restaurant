@@ -11,6 +11,7 @@ export const companySettings = pgTable('company_settings', {
 	website: text('website'),
 	receiptFooter: text('receipt_footer'),
 	taxRate: decimal('tax_rate', { precision: 5, scale: 2 }).notNull().default('10'),
+	serviceRate: decimal('service_rate', { precision: 5, scale: 2 }).notNull().default('0'),
 	bankName: text('bank_name'),
 	bankAccountNumber: text('bank_account_number'),
 	bankAccountName: text('bank_account_name'),
@@ -19,5 +20,6 @@ export const companySettings = pgTable('company_settings', {
 	currencyCode: text('currency_code').notNull().default('USD'),
 	currencySymbol: text('currency_symbol').notNull().default('$'),
 	currencyLocale: text('currency_locale').notNull().default('en-US'),
+	timezone: text('timezone').notNull().default('UTC'),
 	updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

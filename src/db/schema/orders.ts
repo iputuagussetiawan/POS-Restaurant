@@ -23,6 +23,7 @@ export const orders = pgTable('orders', {
 	status: orderStatusEnum('status').notNull().default('pending'),
 	subtotal: decimal('subtotal', { precision: 10, scale: 2 }).notNull(),
 	tax: decimal('tax', { precision: 10, scale: 2 }).notNull(),
+	serviceCharge: decimal('service_charge', { precision: 10, scale: 2 }).notNull().default('0'),
 	total: decimal('total', { precision: 10, scale: 2 }).notNull(),
 	note: text('note'),
 	cancelReason: text('cancel_reason'),

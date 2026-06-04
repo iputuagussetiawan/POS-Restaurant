@@ -3,7 +3,7 @@
 import ErrorState from '@/components/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTRPC } from '@/trpc/client';
-import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery, useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import ProductIdViewHeader from '../components/product-id-view-header';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { CalendarIcon, HashIcon, TagIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import ProductImageGallery from '@/components/product-image-gallery';
 import Image from 'next/image';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 interface Props {
 	productId: string;
@@ -27,6 +28,14 @@ const ProductIdView = ({ productId }: Props) => {
 	const queryClient = useQueryClient();
 	const trpc = useTRPC();
 	const { data } = useSuspenseQuery(trpc.products.getOne.queryOptions({ id: productId }));
+	const { data: company } = useQuery(trpc.company.get.queryOptions());
+	const { format: formatCurrency } = useCurrency();
+	const taxRate = Number(company?.taxRate ?? 0);
+	const serviceRate = Number(company?.serviceRate ?? 0);
+	const basePrice = Number(data.price);
+	const tax = basePrice * (taxRate / 100);
+	const service = basePrice * (serviceRate / 100);
+	const finalPrice = basePrice + tax + service;
 
 	const removeProduct = useMutation(
 		trpc.products.remove.mutationOptions({
@@ -125,11 +134,28 @@ const ProductIdView = ({ productId }: Props) => {
 							</div>
 
 							{/* price */}
-							<div className="flex items-baseline gap-x-2">
-								<span className="text-4xl font-extrabold tracking-tight">
-									${Number(data.price).toFixed(2)}
-								</span>
-								<span className="text-sm text-muted-foreground">per item</span>
+							<div className="flex flex-col gap-y-1">
+								<div className="flex items-baseline gap-x-2">
+									<span className="text-4xl font-extrabold tracking-tight">
+										{formatCurrency(finalPrice)}
+									</span>
+									<span className="text-sm text-muted-foreground">per item</span>
+								</div>
+								{(taxRate > 0 || serviceRate > 0) && (
+									<div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+										<span>{formatCurrency(basePrice)} base</span>
+										{taxRate > 0 && (
+											<span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-600">
+												+{taxRate}% tax = {formatCurrency(tax)}
+											</span>
+										)}
+										{serviceRate > 0 && (
+											<span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
+												+{serviceRate}% service = {formatCurrency(service)}
+											</span>
+										)}
+									</div>
+								)}
 							</div>
 
 							<Separator />

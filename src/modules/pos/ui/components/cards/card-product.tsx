@@ -4,26 +4,32 @@ import { useCartStore } from '@/modules/pos/store/use-cart-store';
 import Image from 'next/image';
 import React from 'react';
 import { PlusIcon, MinusIcon, ShoppingCartIcon } from 'lucide-react';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
+import { useTRPC } from '@/trpc/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface CardProductProps {
 	data?: POSGetOne;
 }
 
-function formatUSD(amount: number) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(amount);
-}
-
 const CardProduct = ({ data }: CardProductProps) => {
+	const { format: formatCurrency } = useCurrency();
+	const trpc = useTRPC();
+	const { data: company } = useQuery(trpc.company.get.queryOptions());
+	const taxRate = Number(company?.taxRate ?? 0);
+	const serviceRate = Number(company?.serviceRate ?? 0);
+
 	const addItem = useCartStore((s) => s.addItem);
 	const updateQuantity = useCartStore((s) => s.updateQuantity);
 	const cartItem = useCartStore((s) => s.items.find((i) => i.product.id === data?.id));
 	const qty = cartItem?.quantity ?? 0;
 
 	if (!data) return null;
+
+	const basePrice = Number(data.price);
+	const tax = basePrice * (taxRate / 100);
+	const service = basePrice * (serviceRate / 100);
+	const finalPrice = basePrice + tax + service;
 
 	return (
 		<div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.07)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_28px_rgba(0,0,0,0.13)]">
@@ -60,8 +66,25 @@ const CardProduct = ({ data }: CardProductProps) => {
 					{data.name}
 				</h3>
 				<p className="mt-1.5 text-sm font-bold text-green-700">
-					{formatUSD(Number(data.price))}
+					{formatCurrency(finalPrice)}
 				</p>
+				{(taxRate > 0 || serviceRate > 0) && (
+					<div className="mt-1 flex flex-wrap items-center gap-1">
+						<span className="text-[10px] text-gray-400">
+							{formatCurrency(basePrice)}
+						</span>
+						{taxRate > 0 && (
+							<span className="rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-600">
+								+{taxRate}% tax
+							</span>
+						)}
+						{serviceRate > 0 && (
+							<span className="rounded-full bg-blue-50 px-1.5 py-0.5 text-[9px] font-semibold text-blue-600">
+								+{serviceRate}% svc
+							</span>
+						)}
+					</div>
+				)}
 			</div>
 
 			{/* Cart controls */}

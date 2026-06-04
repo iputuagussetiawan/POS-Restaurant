@@ -15,12 +15,35 @@ import { ArrowUpDownIcon, MoreHorizontalIcon, PencilIcon, TrashIcon, EyeIcon } f
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useTRPC } from '@/trpc/client';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 import { toast } from 'sonner';
 import { UseConfirm } from '@/hooks/use-confirm';
 import UpdateProductDialog from './update-product-dialog';
 import { ProductGetOne } from '../../types';
+
+const PriceCell = ({ price }: { price: number }) => {
+	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
+	const { data: company } = useQuery(trpc.company.get.queryOptions());
+	const taxRate = Number(company?.taxRate ?? 0);
+	const serviceRate = Number(company?.serviceRate ?? 0);
+	const tax = price * (taxRate / 100);
+	const service = price * (serviceRate / 100);
+	const finalPrice = price + tax + service;
+
+	return (
+		<div className="flex flex-col">
+			<span className="font-semibold tabular-nums">{formatCurrency(finalPrice)}</span>
+			{(taxRate > 0 || serviceRate > 0) && (
+				<span className="text-[11px] text-muted-foreground tabular-nums">
+					{formatCurrency(price)} base
+				</span>
+			)}
+		</div>
+	);
+};
 
 const RowActions = ({ row }: { row: ProductGetMany[number] }) => {
 	const router = useRouter();
@@ -147,11 +170,7 @@ export const columns: ColumnDef<ProductGetMany[number]>[] = [
 				<ArrowUpDownIcon className="ml-2 size-3.5" />
 			</Button>
 		),
-		cell: ({ row }) => (
-			<span className="font-semibold tabular-nums">
-				${Number(row.original.price).toFixed(2)}
-			</span>
-		),
+		cell: ({ row }) => <PriceCell price={Number(row.original.price)} />,
 	},
 	{
 		accessorKey: 'isAvailable',

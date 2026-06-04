@@ -13,8 +13,9 @@ import PaymentModal from '@/modules/pos/ui/components/payment-modal';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 import ProductSearch from '@/modules/pos/ui/components/product-search';
 import CategoryList from '@/modules/pos/ui/components/category-list';
 import ProductList from '@/modules/pos/ui/components/product-list';
@@ -28,18 +29,13 @@ import { useCartStore } from '@/modules/pos/store/use-cart-store';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const TAX_RATE = 0.1;
-
-function formatUSD(amount: number) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(amount);
-}
-
 const PosView = () => {
 	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
+	const { data: company } = useQuery(trpc.company.get.queryOptions());
+	const taxRate = Number(company?.taxRate ?? 10) / 100;
+	const serviceRate = Number(company?.serviceRate ?? 0) / 100;
+
 	const [filters, setFilters] = usePOSFilters();
 	const { data } = useSuspenseQuery(
 		trpc.products.getMany.queryOptions({
@@ -51,8 +47,9 @@ const PosView = () => {
 
 	const { items, removeItem, updateQuantity, clearCart } = useCartStore();
 	const subtotal = items.reduce((sum, i) => sum + Number(i.product.price) * i.quantity, 0);
-	const tax = subtotal * TAX_RATE;
-	const total = subtotal + tax;
+	const tax = subtotal * taxRate;
+	const serviceCharge = subtotal * serviceRate;
+	const total = subtotal + tax + serviceCharge;
 	const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
 
 	const [paymentOpen, setPaymentOpen] = React.useState(false);
@@ -63,7 +60,7 @@ const PosView = () => {
 				clearCart();
 				setPaymentOpen(false);
 				toast.success('Order placed successfully!', {
-					description: `${totalQty} item${totalQty !== 1 ? 's' : ''} · ${formatUSD(total)}`,
+					description: `${totalQty} item${totalQty !== 1 ? 's' : ''} · ${formatCurrency(total)}`,
 					icon: <CheckCircleIcon className="h-4 w-4 text-green-500" />,
 				});
 			},
@@ -197,7 +194,7 @@ const PosView = () => {
 												{product.name}
 											</p>
 											<p className="text-xs font-bold text-green-400">
-												{formatUSD(Number(product.price))}
+												{formatCurrency(Number(product.price))}
 											</p>
 											{/* qty controls */}
 											<div className="mt-1 flex items-center gap-1.5">
@@ -221,7 +218,9 @@ const PosView = () => {
 													<PlusIcon className="h-2.5 w-2.5" />
 												</button>
 												<span className="ml-auto text-xs text-white/40">
-													{formatUSD(Number(product.price) * quantity)}
+													{formatCurrency(
+														Number(product.price) * quantity
+													)}
 												</span>
 											</div>
 										</div>
@@ -248,17 +247,23 @@ const PosView = () => {
 					<div className="space-y-2 text-sm">
 						<div className="flex justify-between text-white/60">
 							<span>Subtotal</span>
-							<span>{formatUSD(subtotal)}</span>
+							<span>{formatCurrency(subtotal)}</span>
 						</div>
 						<div className="flex justify-between text-white/60">
-							<span>Tax (10%)</span>
-							<span>{formatUSD(tax)}</span>
+							<span>Tax ({Math.round(taxRate * 100)}%)</span>
+							<span>{formatCurrency(tax)}</span>
 						</div>
+						{serviceRate > 0 && (
+							<div className="flex justify-between text-white/60">
+								<span>Service ({Math.round(serviceRate * 100)}%)</span>
+								<span>{formatCurrency(serviceCharge)}</span>
+							</div>
+						)}
 					</div>
 					<Separator className="my-3 bg-white/10" />
 					<div className="flex justify-between text-base font-bold">
 						<span className="text-white">Total</span>
-						<span className="text-green-400">{formatUSD(total)}</span>
+						<span className="text-green-400">{formatCurrency(total)}</span>
 					</div>
 					<Button
 						onClick={handlePlaceOrder}
@@ -273,7 +278,7 @@ const PosView = () => {
 						) : (
 							<>
 								<CheckCircleIcon className="mr-2 h-4 w-4" />
-								Place Order · {formatUSD(total)}
+								Place Order · {formatCurrency(total)}
 							</>
 						)}
 					</Button>
@@ -287,6 +292,9 @@ const PosView = () => {
 				isPending={placeOrder.isPending}
 				subtotal={subtotal}
 				tax={tax}
+				taxRate={Math.round(taxRate * 100)}
+				serviceCharge={serviceCharge}
+				serviceRate={Math.round(serviceRate * 100)}
 				total={total}
 			/>
 		</div>

@@ -19,17 +19,11 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { OrderStatusBadge } from '@/modules/orders/ui/components/order-status-badge';
-
-function formatUSD(n: number | string) {
-	return new Intl.NumberFormat('en-US', {
-		style: 'currency',
-		currency: 'USD',
-		minimumFractionDigits: 2,
-	}).format(Number(n));
-}
+import { useCurrency } from '@/modules/company/hooks/use-currency';
 
 const BillView = () => {
 	const trpc = useTRPC();
+	const { format: formatCurrency } = useCurrency();
 	const [input, setInput] = useState('');
 	const [searchId, setSearchId] = useState('');
 
@@ -179,7 +173,7 @@ const BillView = () => {
 											)}
 										>
 											{format(new Date(o.createdAt), 'dd MMM, HH:mm')} ·{' '}
-											{formatUSD(o.total)}
+											{formatCurrency(o.total)}
 										</p>
 									</div>
 									<OrderStatusBadge

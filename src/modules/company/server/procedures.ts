@@ -14,6 +14,7 @@ const upsertSchema = z.object({
 	website: z.string().optional(),
 	receiptFooter: z.string().optional(),
 	taxRate: z.number().min(0).max(100).optional(),
+	serviceRate: z.number().min(0).max(100).optional(),
 	bankName: z.string().optional(),
 	bankAccountNumber: z.string().optional(),
 	bankAccountName: z.string().optional(),
@@ -22,6 +23,7 @@ const upsertSchema = z.object({
 	currencyCode: z.string().min(1).max(10).optional(),
 	currencySymbol: z.string().min(1).max(5).optional(),
 	currencyLocale: z.string().min(1).optional(),
+	timezone: z.string().min(1).optional(),
 });
 
 export const companyRouter = createTRPCRouter({
@@ -45,6 +47,8 @@ export const companyRouter = createTRPCRouter({
 				.set({
 					...input,
 					taxRate: input.taxRate !== undefined ? String(input.taxRate) : undefined,
+					serviceRate:
+						input.serviceRate !== undefined ? String(input.serviceRate) : undefined,
 					updatedAt: new Date(),
 				})
 				.where(eq(companySettings.id, 'default'))
@@ -58,6 +62,7 @@ export const companyRouter = createTRPCRouter({
 				id: 'default',
 				...input,
 				taxRate: input.taxRate !== undefined ? String(input.taxRate) : '10',
+				serviceRate: input.serviceRate !== undefined ? String(input.serviceRate) : '0',
 			})
 			.returning();
 		return created;

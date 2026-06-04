@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
@@ -35,9 +35,13 @@ import {
 	CoinsIcon,
 	CheckIcon,
 	SettingsIcon,
+	ClockIcon,
+	MonitorIcon,
+	PercentIcon,
 } from 'lucide-react';
 import Image from 'next/image';
-import { Suspense, useState } from 'react';
+import { Switch } from '@/components/ui/switch';
+import { Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorState from '@/components/error-state';
 import { cn } from '@/lib/utils';
@@ -63,7 +67,11 @@ const paymentSchema = z.object({
 
 const receiptSchema = z.object({
 	receiptFooter: z.string().optional(),
+});
+
+const pricingSchema = z.object({
 	taxRate: z.coerce.number().min(0).max(100),
+	serviceRate: z.coerce.number().min(0).max(100),
 });
 
 const currencySchema = z.object({
@@ -72,10 +80,36 @@ const currencySchema = z.object({
 	currencyLocale: z.string().min(1, 'Required'),
 });
 
+const timezoneSchema = z.object({
+	timezone: z.string().min(1, 'Required'),
+});
+
 type CompanyInfo = z.infer<typeof companyInfoSchema>;
 type Payment = z.infer<typeof paymentSchema>;
 type ReceiptSettings = z.infer<typeof receiptSchema>;
+type PricingSettings = z.infer<typeof pricingSchema>;
 type CurrencySettings = z.infer<typeof currencySchema>;
+type TimezoneSettings = z.infer<typeof timezoneSchema>;
+
+const COMMON_TIMEZONES = [
+	{ value: 'UTC', label: 'UTC', region: 'Universal' },
+	{ value: 'America/New_York', label: 'Eastern Time', region: 'US' },
+	{ value: 'America/Chicago', label: 'Central Time', region: 'US' },
+	{ value: 'America/Denver', label: 'Mountain Time', region: 'US' },
+	{ value: 'America/Los_Angeles', label: 'Pacific Time', region: 'US' },
+	{ value: 'Europe/London', label: 'London', region: 'Europe' },
+	{ value: 'Europe/Paris', label: 'Paris / Berlin', region: 'Europe' },
+	{ value: 'Europe/Moscow', label: 'Moscow', region: 'Europe' },
+	{ value: 'Asia/Dubai', label: 'Dubai', region: 'Middle East' },
+	{ value: 'Asia/Kolkata', label: 'India (IST)', region: 'Asia' },
+	{ value: 'Asia/Bangkok', label: 'Bangkok / Jakarta', region: 'Asia' },
+	{ value: 'Asia/Singapore', label: 'Singapore / KL', region: 'Asia' },
+	{ value: 'Asia/Makassar', label: 'Bali / Lombok (WITA)', region: 'Asia' },
+	{ value: 'Asia/Jayapura', label: 'Papua (WIT)', region: 'Asia' },
+	{ value: 'Asia/Tokyo', label: 'Tokyo', region: 'Asia' },
+	{ value: 'Australia/Sydney', label: 'Sydney', region: 'Pacific' },
+	{ value: 'Pacific/Auckland', label: 'Auckland', region: 'Pacific' },
+];
 
 const COMMON_CURRENCIES = [
 	{ code: 'USD', symbol: '$', locale: 'en-US', label: 'US Dollar' },
@@ -160,9 +194,22 @@ const CompanySettingsContent = () => {
 		resolver: zodResolver(receiptSchema),
 		defaultValues: {
 			receiptFooter: settings?.receiptFooter ?? '',
-			taxRate: Number(settings?.taxRate ?? 10),
 		},
 	});
+
+	const pricingForm = useForm<PricingSettings>({
+		resolver: zodResolver(pricingSchema),
+		defaultValues: {
+			taxRate: Number(settings?.taxRate ?? 10),
+			serviceRate: Number(settings?.serviceRate ?? 0),
+		},
+	});
+	const watchedTaxRate = pricingForm.watch('taxRate');
+	const watchedServiceRate = pricingForm.watch('serviceRate');
+	const previewSubtotal = 100_000;
+	const previewTax = previewSubtotal * ((Number(watchedTaxRate) || 0) / 100);
+	const previewService = previewSubtotal * ((Number(watchedServiceRate) || 0) / 100);
+	const previewTotal = previewSubtotal + previewTax + previewService;
 
 	const currencyForm = useForm<CurrencySettings>({
 		resolver: zodResolver(currencySchema),
@@ -172,6 +219,47 @@ const CompanySettingsContent = () => {
 			currencyLocale: settings?.currencyLocale ?? 'en-US',
 		},
 	});
+	const timezoneForm = useForm<TimezoneSettings>({
+		resolver: zodResolver(timezoneSchema),
+		defaultValues: {
+			timezone: settings?.timezone ?? 'UTC',
+		},
+	});
+	const watchedTimezone = timezoneForm.watch('timezone');
+
+	const [useSystemTz, setUseSystemTz] = useState(false);
+	const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	useEffect(() => {
+		if (useSystemTz) {
+			timezoneForm.setValue('timezone', systemTz, { shouldDirty: true });
+		}
+	}, [useSystemTz, systemTz, timezoneForm]);
+
+	const [clockTime, setClockTime] = useState('');
+	useEffect(() => {
+		const tick = () => {
+			try {
+				setClockTime(
+					new Intl.DateTimeFormat('en-US', {
+						timeZone: watchedTimezone,
+						hour: '2-digit',
+						minute: '2-digit',
+						second: '2-digit',
+						hour12: false,
+						weekday: 'short',
+						month: 'short',
+						day: 'numeric',
+					}).format(new Date())
+				);
+			} catch {
+				setClockTime('Invalid timezone');
+			}
+		};
+		tick();
+		const id = setInterval(tick, 1000);
+		return () => clearInterval(id);
+	}, [watchedTimezone]);
+
 	const watchedCode = currencyForm.watch('currencyCode');
 	const watchedLocale = currencyForm.watch('currencyLocale');
 	const previewAmount = (() => {
@@ -208,12 +296,14 @@ const CompanySettingsContent = () => {
 				<Tabs defaultValue="company" className="flex flex-1 flex-col md:flex-row">
 					{/* ── Mobile: segmented pill bar ── */}
 					<div className="shrink-0 border-b bg-white px-4 py-3 md:hidden">
-						<TabsList className="grid w-full grid-cols-4 rounded-xl bg-gray-100 p-1 shadow-none">
+						<TabsList className="grid w-full grid-cols-6 rounded-xl bg-gray-100 p-1 shadow-none">
 							{[
 								{ value: 'company', icon: BuildingIcon, label: 'Company' },
 								{ value: 'payment', icon: BanknoteIcon, label: 'Payment' },
+								{ value: 'pricing', icon: PercentIcon, label: 'Pricing' },
 								{ value: 'receipt', icon: ReceiptIcon, label: 'Receipt' },
 								{ value: 'currency', icon: CoinsIcon, label: 'Currency' },
+								{ value: 'timezone', icon: ClockIcon, label: 'Timezone' },
 							].map((tab) => (
 								<TabsTrigger
 									key={tab.value}
@@ -255,16 +345,28 @@ const CompanySettingsContent = () => {
 								desc: 'Bank & QRIS',
 							},
 							{
+								value: 'pricing',
+								label: 'Pricing',
+								icon: PercentIcon,
+								desc: 'Tax & service rate',
+							},
+							{
 								value: 'receipt',
 								label: 'Receipt',
 								icon: ReceiptIcon,
-								desc: 'Footer & tax',
+								desc: 'Footer text',
 							},
 							{
 								value: 'currency',
 								label: 'Currency',
 								icon: CoinsIcon,
 								desc: 'Format & symbol',
+							},
+							{
+								value: 'timezone',
+								label: 'Timezone',
+								icon: ClockIcon,
+								desc: 'Local time & zone',
 							},
 						].map((tab) => (
 							<TabsTrigger
@@ -656,6 +758,136 @@ const CompanySettingsContent = () => {
 						</div>
 					</TabsContent>
 
+					{/* ── Pricing tab ── */}
+					<TabsContent
+						value="pricing"
+						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
+					>
+						<div className="mx-auto max-w-2xl">
+							<Form {...pricingForm}>
+								<form onSubmit={pricingForm.handleSubmit((v) => upsert.mutate(v))}>
+									<div className="rounded-2xl border bg-white shadow-sm">
+										<div className="space-y-6 px-6 py-6">
+											<div className="grid gap-4 sm:grid-cols-2">
+												<FormField
+													control={pricingForm.control}
+													name="taxRate"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel className="flex items-center gap-1.5">
+																<PercentIcon className="h-3.5 w-3.5" />
+																Tax Rate
+															</FormLabel>
+															<FormControl>
+																<div className="relative">
+																	<Input
+																		type="number"
+																		min="0"
+																		max="100"
+																		step="0.5"
+																		placeholder="10"
+																		{...field}
+																		className="pr-8"
+																	/>
+																	<span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-400">
+																		%
+																	</span>
+																</div>
+															</FormControl>
+															<FormMessage />
+															<p className="text-[11px] text-gray-400">
+																Applied to every order subtotal
+															</p>
+														</FormItem>
+													)}
+												/>
+												<FormField
+													control={pricingForm.control}
+													name="serviceRate"
+													render={({ field }) => (
+														<FormItem>
+															<FormLabel className="flex items-center gap-1.5">
+																<PercentIcon className="h-3.5 w-3.5" />
+																Service Charge
+															</FormLabel>
+															<FormControl>
+																<div className="relative">
+																	<Input
+																		type="number"
+																		min="0"
+																		max="100"
+																		step="0.5"
+																		placeholder="0"
+																		{...field}
+																		className="pr-8"
+																	/>
+																	<span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-400">
+																		%
+																	</span>
+																</div>
+															</FormControl>
+															<FormMessage />
+															<p className="text-[11px] text-gray-400">
+																Added on top of subtotal
+															</p>
+														</FormItem>
+													)}
+												/>
+											</div>
+
+											<Separator />
+
+											{/* Live breakdown preview */}
+											<div>
+												<GroupLabel>Order Preview</GroupLabel>
+												<div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50 text-sm">
+													<div className="flex justify-between px-4 py-2.5">
+														<span className="text-gray-500">
+															Subtotal
+														</span>
+														<span className="font-mono font-medium text-gray-700">
+															100,000
+														</span>
+													</div>
+													<div className="flex justify-between border-t px-4 py-2.5">
+														<span className="text-gray-500">
+															Tax ({Number(watchedTaxRate) || 0}%)
+														</span>
+														<span className="font-mono font-medium text-gray-700">
+															{previewTax.toLocaleString()}
+														</span>
+													</div>
+													<div className="flex justify-between border-t px-4 py-2.5">
+														<span className="text-gray-500">
+															Service (
+															{Number(watchedServiceRate) || 0}%)
+														</span>
+														<span className="font-mono font-medium text-gray-700">
+															{previewService.toLocaleString()}
+														</span>
+													</div>
+													<div className="flex justify-between border-t bg-green-50 px-4 py-3">
+														<span className="font-semibold text-green-700">
+															Total
+														</span>
+														<span className="font-mono text-base font-bold text-green-800">
+															{previewTotal.toLocaleString()}
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+
+										<Separator />
+										<div className="flex justify-end px-6 py-4">
+											<SaveBtn isPending={upsert.isPending} />
+										</div>
+									</div>
+								</form>
+							</Form>
+						</div>
+					</TabsContent>
+
 					{/* ── Receipt tab ── */}
 					<TabsContent
 						value="receipt"
@@ -666,32 +898,6 @@ const CompanySettingsContent = () => {
 								<form onSubmit={receiptForm.handleSubmit((v) => upsert.mutate(v))}>
 									<div className="rounded-2xl border bg-white shadow-sm">
 										<div className="space-y-5 px-6 py-6">
-											<FormField
-												control={receiptForm.control}
-												name="taxRate"
-												render={({ field }) => (
-													<FormItem className="max-w-xs">
-														<FormLabel>Tax Rate (%)</FormLabel>
-														<FormControl>
-															<div className="relative">
-																<Input
-																	type="number"
-																	min="0"
-																	max="100"
-																	step="0.5"
-																	placeholder="10"
-																	{...field}
-																	className="pr-8"
-																/>
-																<span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-gray-400">
-																	%
-																</span>
-															</div>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
 											<FormField
 												control={receiptForm.control}
 												name="receiptFooter"
@@ -884,6 +1090,157 @@ const CompanySettingsContent = () => {
 							</Form>
 						</div>
 					</TabsContent>
+					{/* Timezone tab */}
+					<TabsContent
+						value="timezone"
+						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
+					>
+						<div className="mx-auto max-w-2xl">
+							<Form {...timezoneForm}>
+								<form onSubmit={timezoneForm.handleSubmit((v) => upsert.mutate(v))}>
+									<div className="rounded-2xl border bg-white shadow-sm">
+										<div className="space-y-6 px-6 py-6">
+											{/* Use system timezone switch */}
+											<div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+												<div className="flex items-center gap-3">
+													<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">
+														<MonitorIcon className="h-4 w-4 text-gray-500" />
+													</div>
+													<div>
+														<p className="text-xs font-semibold text-gray-700">
+															Use system timezone
+														</p>
+														<p className="text-[11px] text-gray-400">
+															Detected:{' '}
+															<span className="font-mono">
+																{systemTz}
+															</span>
+														</p>
+													</div>
+												</div>
+												<Switch
+													checked={useSystemTz}
+													onCheckedChange={(v) => {
+														setUseSystemTz(v);
+														if (!v)
+															timezoneForm.setValue(
+																'timezone',
+																watchedTimezone
+															);
+													}}
+												/>
+											</div>
+
+											{/* Live clock */}
+											<div className="flex items-center justify-between rounded-xl border border-green-100 bg-green-50 px-4 py-4">
+												<div>
+													<p className="text-xs font-semibold text-green-700">
+														Live Clock
+													</p>
+													<p className="mt-0.5 text-[11px] text-gray-400">
+														{watchedTimezone}
+													</p>
+												</div>
+												<p className="font-mono text-xl font-bold text-green-800 tabular-nums">
+													{clockTime || '—'}
+												</p>
+											</div>
+
+											<div
+												className={cn(
+													useSystemTz && 'pointer-events-none opacity-40'
+												)}
+											>
+												<GroupLabel>Common Timezones</GroupLabel>
+												<div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+													{COMMON_TIMEZONES.map((tz) => {
+														const isActive =
+															watchedTimezone === tz.value;
+														return (
+															<button
+																type="button"
+																key={tz.value}
+																onClick={() =>
+																	timezoneForm.setValue(
+																		'timezone',
+																		tz.value
+																	)
+																}
+																className={cn(
+																	'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-all',
+																	isActive
+																		? 'border-green-600 bg-green-50 text-green-700 shadow-sm'
+																		: 'border-gray-100 bg-white text-gray-600 hover:border-green-300 hover:bg-green-50'
+																)}
+															>
+																<ClockIcon
+																	className={cn(
+																		'h-3.5 w-3.5 shrink-0',
+																		isActive
+																			? 'text-green-600'
+																			: 'text-gray-400'
+																	)}
+																/>
+																<div className="min-w-0 flex-1">
+																	<p className="truncate font-semibold">
+																		{tz.label}
+																	</p>
+																	<p className="text-[10px] text-gray-400">
+																		{tz.region}
+																	</p>
+																</div>
+																{isActive && (
+																	<CheckIcon className="h-3 w-3 shrink-0 text-green-600" />
+																)}
+															</button>
+														);
+													})}
+												</div>
+											</div>
+
+											<Separator />
+
+											<div
+												className={cn(
+													useSystemTz && 'pointer-events-none opacity-40'
+												)}
+											>
+												<GroupLabel>Custom Timezone</GroupLabel>
+												<FormField
+													control={timezoneForm.control}
+													name="timezone"
+													render={({ field }) => (
+														<FormItem className="max-w-sm">
+															<FormLabel>
+																IANA Timezone Identifier
+															</FormLabel>
+															<FormControl>
+																<Input
+																	placeholder="Asia/Singapore"
+																	className="font-mono"
+																	{...field}
+																/>
+															</FormControl>
+															<FormMessage />
+															<p className="text-[11px] text-gray-400">
+																e.g. Asia/Jakarta, Europe/London,
+																America/New_York
+															</p>
+														</FormItem>
+													)}
+												/>
+											</div>
+										</div>
+
+										<Separator />
+										<div className="flex justify-end px-6 py-4">
+											<SaveBtn isPending={upsert.isPending} />
+										</div>
+									</div>
+								</form>
+							</Form>
+						</div>
+					</TabsContent>
 				</Tabs>
 			</div>
 		</div>
@@ -907,7 +1264,7 @@ export const CompanySettingsViewLoading = () => (
 		<div className="flex flex-1 overflow-hidden bg-muted/40">
 			{/* Vertical nav skeleton */}
 			<div className="flex w-52 shrink-0 flex-col gap-1 border-r bg-white px-3 py-4">
-				{[1, 2, 3, 4].map((i) => (
+				{[1, 2, 3, 4, 5, 6].map((i) => (
 					<div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
 						<Skeleton className="h-8 w-8 rounded-lg" />
 						<div className="space-y-1">
