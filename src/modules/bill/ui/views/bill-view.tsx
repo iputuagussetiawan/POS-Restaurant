@@ -243,7 +243,7 @@ const BillView = () => {
 					{/* Receipt */}
 					{showReceipt && (
 						<div className="mx-auto w-full max-w-sm">
-							<Receipt order={order as Parameters<typeof Receipt>[0]['order']} />
+							<Receipt order={{ ...order, createdAt: new Date(order.createdAt) }} />
 						</div>
 					)}
 				</div>
