@@ -8,7 +8,7 @@ export const useUsersFilters = () => {
 		pageSize: parseAsInteger
 			.withDefault(DEFAULT_PAGE_SIZE)
 			.withOptions({ clearOnDefault: true }),
-		role: parseAsStringEnum(['admin', 'manager', 'cashier', 'pending']).withOptions({
+		role: parseAsStringEnum(['admin', 'manager', 'cashier', 'kitchen', 'pending']).withOptions({
 			clearOnDefault: true,
 		}),
 		status: parseAsStringEnum(['active', 'banned']).withOptions({ clearOnDefault: true }),
