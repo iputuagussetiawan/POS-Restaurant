@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
 		domains: ['images.pexels.com'],
 	},
 	experimental: {
-		cssChunking: 'simple',
+		cssChunking: false,
 	},
 };
 
