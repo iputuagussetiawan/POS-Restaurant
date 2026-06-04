@@ -22,6 +22,7 @@ import {
 	ChevronDownIcon,
 	CrownIcon,
 	ShieldIcon,
+	UtensilsCrossedIcon,
 } from 'lucide-react';
 
 const ROLE_CONFIG: Record<string, { label: string; icon: React.ElementType; badge: string }> = {
@@ -35,6 +36,11 @@ const ROLE_CONFIG: Record<string, { label: string; icon: React.ElementType; badg
 		label: 'Cashier',
 		icon: ShoppingCartIcon,
 		badge: 'border-green-200 bg-green-50 text-green-700',
+	},
+	kitchen: {
+		label: 'Kitchen',
+		icon: UtensilsCrossedIcon,
+		badge: 'border-orange-200 bg-orange-50 text-orange-700',
 	},
 	pending: {
 		label: 'Pending',

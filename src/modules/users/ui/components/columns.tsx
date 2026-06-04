@@ -23,6 +23,7 @@ import {
 	ShieldIcon,
 	UserIcon,
 	ClockIcon,
+	UtensilsCrossedIcon,
 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTRPC } from '@/trpc/client';
@@ -30,8 +31,8 @@ import { toast } from 'sonner';
 import { UseConfirm } from '@/hooks/use-confirm';
 import { cn } from '@/lib/utils';
 
-type Role = 'admin' | 'manager' | 'cashier' | 'pending';
-const ROLES: Role[] = ['admin', 'manager', 'cashier', 'pending'];
+type Role = 'admin' | 'manager' | 'cashier' | 'kitchen' | 'pending';
+const ROLES: Role[] = ['admin', 'manager', 'cashier', 'kitchen', 'pending'];
 
 const ROLE_CONFIG: Record<
 	Role,
@@ -54,6 +55,12 @@ const ROLE_CONFIG: Record<
 		icon: UserIcon,
 		badge: 'border-green-200 bg-green-50 text-green-700',
 		item: 'text-green-700',
+	},
+	kitchen: {
+		label: 'Kitchen',
+		icon: UtensilsCrossedIcon,
+		badge: 'border-orange-200 bg-orange-50 text-orange-700',
+		item: 'text-orange-700',
 	},
 	pending: {
 		label: 'Pending',

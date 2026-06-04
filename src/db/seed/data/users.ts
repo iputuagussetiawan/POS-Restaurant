@@ -24,4 +24,10 @@ export const usersData: {
 		password: 'Cashier@1234',
 		role: 'cashier',
 	},
+	{
+		name: 'Kitchen User',
+		email: 'kitchen@foodorder.com',
+		password: 'Kitchen@1234',
+		role: 'kitchen',
+	},
 ];

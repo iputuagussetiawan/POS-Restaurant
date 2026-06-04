@@ -96,6 +96,10 @@ export default async function LandingPage() {
 		redirect('/pos');
 	}
 
+	if (session?.user?.role === 'kitchen') {
+		redirect('/kitchen');
+	}
+
 	const user = session?.user ?? null;
 
 	return (

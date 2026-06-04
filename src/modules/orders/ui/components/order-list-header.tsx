@@ -130,8 +130,10 @@ const OrderListHeader = ({ viewMode, onViewModeChange }: Props) => {
 
 	const isAnyFilterActive = hasDateFilter || !!filters.search || !!filters.status;
 
-	const dateFromStr = dateFrom ? format(dateFrom, 'yyyy-MM-dd') : undefined;
-	const dateToStr = dateTo ? format(dateTo, 'yyyy-MM-dd') : undefined;
+	const toLocalDate = (d: Date) =>
+		`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+	const dateFromStr = dateFrom ? toLocalDate(dateFrom) : undefined;
+	const dateToStr = dateTo ? toLocalDate(dateTo) : undefined;
 
 	return (
 		<div>

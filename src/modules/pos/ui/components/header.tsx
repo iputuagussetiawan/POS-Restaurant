@@ -11,16 +11,25 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import MenuProfile from './menu-profile';
 import { cn } from '@/lib/utils';
+import { authClient } from '@/lib/auth-client';
 
-const mainMenu = [
+const cashierMenu = [
 	{ icon: LayoutDashboardIcon, label: 'POS', href: '/pos' },
 	{ icon: ListIcon, label: 'Order List', href: '/order-list' },
 	{ icon: HistoryIcon, label: 'My History', href: '/cashier-history' },
 	{ icon: CircleDollarSign, label: 'Bill', href: '/bill' },
 ];
 
+const kitchenMenu = [
+	{ icon: UtensilsCrossed, label: 'Kitchen', href: '/kitchen' },
+	{ icon: ListIcon, label: 'Order List', href: '/order-list' },
+];
+
 const HeaderPOS = () => {
 	const pathname = usePathname();
+	const { data: session } = authClient.useSession();
+	const isKitchen = session?.user?.role === 'kitchen';
+	const mainMenu = isKitchen ? kitchenMenu : cashierMenu;
 	return (
 		<nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 px-6 backdrop-blur-md">
 			<div className="flex h-14 items-center justify-between gap-4">

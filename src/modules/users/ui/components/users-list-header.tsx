@@ -14,13 +14,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-type Role = 'admin' | 'manager' | 'cashier' | 'pending';
+type Role = 'admin' | 'manager' | 'cashier' | 'kitchen' | 'pending';
 type Status = 'active' | 'banned';
 
 const ROLES: { value: Role; label: string; color: string }[] = [
 	{ value: 'admin', label: 'Admin', color: 'text-red-600' },
 	{ value: 'manager', label: 'Manager', color: 'text-blue-600' },
 	{ value: 'cashier', label: 'Cashier', color: 'text-green-600' },
+	{ value: 'kitchen', label: 'Kitchen', color: 'text-orange-600' },
 	{ value: 'pending', label: 'Pending', color: 'text-yellow-600' },
 ];
 

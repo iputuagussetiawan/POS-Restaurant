@@ -214,10 +214,11 @@ export const ordersRouter = createTRPCRouter({
 				search: z.string().nullish(),
 				dateFrom: z.string().nullish(),
 				dateTo: z.string().nullish(),
+				sortOrder: z.enum(['asc', 'desc']).default('desc'),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { page, pageSize, status, search, dateFrom, dateTo } = input;
+			const { page, pageSize, status, search, dateFrom, dateTo, sortOrder } = input;
 			const { timezone } = await getSettings();
 
 			let rangeStart: Date | undefined;
@@ -226,7 +227,6 @@ export const ordersRouter = createTRPCRouter({
 			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
 
 			const where = and(
-				eq(orders.userId, ctx.auth.user.id),
 				status ? eq(orders.status, status) : undefined,
 				search ? ilike(orders.id, `%${search}%`) : undefined,
 				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
@@ -247,7 +247,7 @@ export const ordersRouter = createTRPCRouter({
 				.leftJoin(orderItems, eq(orderItems.orderId, orders.id))
 				.where(where)
 				.groupBy(orders.id, customers.name, customers.phone, user.name)
-				.orderBy(desc(orders.createdAt))
+				.orderBy(sortOrder === 'asc' ? orders.createdAt : desc(orders.createdAt))
 				.limit(pageSize)
 				.offset((page - 1) * pageSize);
 
@@ -267,7 +267,7 @@ export const ordersRouter = createTRPCRouter({
 				dateTo: z.string().nullish(),
 			})
 		)
-		.query(async ({ input, ctx }) => {
+		.query(async ({ input }) => {
 			const { search, dateFrom, dateTo } = input;
 			const { timezone } = await getSettings();
 
@@ -277,7 +277,6 @@ export const ordersRouter = createTRPCRouter({
 			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
 
 			const where = and(
-				eq(orders.userId, ctx.auth.user.id),
 				search ? ilike(orders.id, `%${search}%`) : undefined,
 				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
 				rangeEnd ? lt(orders.createdAt, rangeEnd) : undefined
@@ -355,7 +354,7 @@ export const ordersRouter = createTRPCRouter({
 				dateTo: z.string().nullish(),
 			})
 		)
-		.query(async ({ input, ctx }) => {
+		.query(async ({ input }) => {
 			const { search, dateFrom, dateTo } = input;
 			const { timezone } = await getSettings();
 
@@ -365,7 +364,6 @@ export const ordersRouter = createTRPCRouter({
 			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
 
 			const where = and(
-				eq(orders.userId, ctx.auth.user.id),
 				search ? ilike(orders.id, `%${search}%`) : undefined,
 				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
 				rangeEnd ? lt(orders.createdAt, rangeEnd) : undefined

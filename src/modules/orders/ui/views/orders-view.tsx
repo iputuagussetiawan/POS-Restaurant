@@ -537,13 +537,16 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 	const [filters, setFilters] = useOrdersFilters();
 	const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+	const toLocalDate = (d: Date) =>
+		`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 	const { data } = useSuspenseQuery(
 		trpc.orders.getMany.queryOptions({
 			page: filters.page,
 			status: filters.status ?? undefined,
 			search: filters.search || undefined,
-			dateFrom: filters.dateFrom?.toISOString().split('T')[0] ?? undefined,
-			dateTo: filters.dateTo?.toISOString().split('T')[0] ?? undefined,
+			dateFrom: filters.dateFrom ? toLocalDate(filters.dateFrom) : undefined,
+			dateTo: filters.dateTo ? toLocalDate(filters.dateTo) : undefined,
 		})
 	);
 
@@ -571,8 +574,8 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 			<div className="flex flex-1 flex-col gap-4 p-6">
 				<StatusCountsWidget
 					search={filters.search || undefined}
-					dateFrom={filters.dateFrom?.toISOString().split('T')[0]}
-					dateTo={filters.dateTo?.toISOString().split('T')[0]}
+					dateFrom={filters.dateFrom ? toLocalDate(filters.dateFrom) : undefined}
+					dateTo={filters.dateTo ? toLocalDate(filters.dateTo) : undefined}
 				/>
 				<div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
 					<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100">
@@ -593,8 +596,8 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 		<div className="flex flex-1 flex-col gap-4 p-6">
 			<StatusCountsWidget
 				search={filters.search || undefined}
-				dateFrom={filters.dateFrom?.toISOString().split('T')[0]}
-				dateTo={filters.dateTo?.toISOString().split('T')[0]}
+				dateFrom={filters.dateFrom ? toLocalDate(filters.dateFrom) : undefined}
+				dateTo={filters.dateTo ? toLocalDate(filters.dateTo) : undefined}
 			/>
 
 			<p className="text-xs font-medium tracking-wider text-gray-400 uppercase">
@@ -708,7 +711,7 @@ export const OrdersViewLoading = () => (
 
 /* ── Root view ──────────────────────────────────────────────────────────── */
 const OrdersView = () => {
-	const [viewMode, setViewMode] = useState<ViewMode>('grid');
+	const [viewMode, setViewMode] = useState<ViewMode>('table');
 	return (
 		<div className="flex flex-1 flex-col bg-muted/40">
 			<OrderListHeader viewMode={viewMode} onViewModeChange={setViewMode} />

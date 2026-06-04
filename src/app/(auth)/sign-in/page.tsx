@@ -10,9 +10,8 @@ const page = async () => {
 	});
 
 	if (session) {
-		if (session.user.role === 'cashier') {
-			redirect('/pos');
-		}
+		if (session.user.role === 'cashier') redirect('/pos');
+		if (session.user.role === 'kitchen') redirect('/kitchen');
 		redirect('/admin');
 	}
 	return <SignInView />;
