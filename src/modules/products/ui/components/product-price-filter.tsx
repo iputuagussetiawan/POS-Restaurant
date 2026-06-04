@@ -21,6 +21,7 @@ const ProductPriceFilter = () => {
 
 	useEffect(() => {
 		setFilters({ minPrice: debouncedRange[0], maxPrice: debouncedRange[1], page: 1 });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedRange]);
 
 	// sync back when cleared externally

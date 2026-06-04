@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { XIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { useProductsFilters } from '../../hooks/use-products-filter';
 import { ProductSearchFilter } from './product-search-filter';

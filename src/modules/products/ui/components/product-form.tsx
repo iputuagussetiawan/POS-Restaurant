@@ -307,8 +307,8 @@ const ProductForm = ({ onSuccess, onCancel, initialValues }: ProductFormProp) =>
 									<div className="flex items-center gap-x-2 rounded-md border border-dashed px-3 py-3">
 										<ImageIcon className="size-4 text-muted-foreground/40" />
 										<p className="text-xs text-muted-foreground">
-											No gallery images — click "+ Add image" to add more
-											views
+											No gallery images — click &quot;+ Add image&quot; to add
+											more views
 										</p>
 									</div>
 								)}
