@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
 	Select,
 	SelectContent,
@@ -47,10 +49,142 @@ import {
 	PackageIcon,
 	DownloadIcon,
 	Loader2Icon,
+	CalendarIcon,
 } from 'lucide-react';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorState from '@/components/error-state';
+
+/* ── Date Range Picker ─────────────────────────────────────────────────── */
+const PRESETS = [
+	{
+		label: 'Today',
+		get: () => {
+			const d = format(new Date(), 'yyyy-MM-dd');
+			return { from: d, to: d };
+		},
+	},
+	{
+		label: 'Yesterday',
+		get: () => {
+			const d = new Date();
+			d.setDate(d.getDate() - 1);
+			const s = format(d, 'yyyy-MM-dd');
+			return { from: s, to: s };
+		},
+	},
+	{
+		label: 'Last 7 days',
+		get: () => {
+			const to = new Date();
+			const from = new Date();
+			from.setDate(from.getDate() - 6);
+			return { from: format(from, 'yyyy-MM-dd'), to: format(to, 'yyyy-MM-dd') };
+		},
+	},
+	{
+		label: 'This month',
+		get: () => {
+			const now = new Date();
+			const from = new Date(now.getFullYear(), now.getMonth(), 1);
+			return { from: format(from, 'yyyy-MM-dd'), to: format(now, 'yyyy-MM-dd') };
+		},
+	},
+];
+
+const DateRangePicker = ({
+	from,
+	to,
+	onChange,
+}: {
+	from: string;
+	to: string;
+	onChange: (from: string, to: string) => void;
+}) => {
+	const [open, setOpen] = useState(false);
+
+	const range = {
+		from: from ? new Date(from + 'T00:00:00') : undefined,
+		to: to ? new Date(to + 'T00:00:00') : undefined,
+	};
+
+	const label =
+		from && to && from === to
+			? format(range.from!, 'dd MMM yyyy')
+			: from && to
+				? `${format(range.from!, 'dd MMM yyyy')} – ${format(range.to!, 'dd MMM yyyy')}`
+				: from
+					? `From ${format(range.from!, 'dd MMM yyyy')}`
+					: 'Pick date range';
+
+	const applyPreset = (preset: (typeof PRESETS)[number]) => {
+		const { from, to } = preset.get();
+		onChange(from, to);
+		setOpen(false);
+	};
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger asChild>
+				<Button
+					variant="outline"
+					size="sm"
+					className={cn(
+						'h-9 min-w-[200px] justify-start gap-2 text-sm font-normal shadow-none',
+						!from && !to && 'text-muted-foreground'
+					)}
+				>
+					<CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+					{label}
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="w-auto p-0" align="end">
+				{/* Presets */}
+				<div className="flex gap-1.5 border-b px-3 py-2.5">
+					{PRESETS.map((p) => (
+						<Button
+							key={p.label}
+							variant="outline"
+							size="sm"
+							className="h-7 px-2.5 text-xs"
+							onClick={() => applyPreset(p)}
+						>
+							{p.label}
+						</Button>
+					))}
+				</div>
+				<Calendar
+					mode="range"
+					selected={range}
+					onSelect={(r) => {
+						onChange(
+							r?.from ? format(r.from, 'yyyy-MM-dd') : '',
+							r?.to ? format(r.to, 'yyyy-MM-dd') : ''
+						);
+						if (r?.from && r?.to) setOpen(false);
+					}}
+					numberOfMonths={2}
+					initialFocus
+				/>
+				{(from || to) && (
+					<div className="border-t px-3 py-2">
+						<Button
+							variant="ghost"
+							size="sm"
+							className="h-7 w-full text-xs text-muted-foreground"
+							onClick={() => {
+								onChange('', '');
+								setOpen(false);
+							}}
+						>
+							Clear range
+						</Button>
+					</div>
+				)}
+			</PopoverContent>
+		</Popover>
+	);
+};
 
 const STATUS_OPTIONS = [
 	{ value: 'all', label: 'All Statuses' },
@@ -91,7 +225,7 @@ const KpiCard = ({
 	icon: React.ElementType;
 	accent: string;
 }) => (
-	<div className="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
+	<div className="flex items-center gap-4 rounded-2xl bg-white p-5">
 		<div
 			className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-xl', accent)}
 		>
@@ -303,7 +437,7 @@ const HistoryContent = () => {
 				</div>
 
 				{/* Filters */}
-				<div className="rounded-2xl border bg-white p-4 shadow-sm">
+				<div className="rounded-2xl border bg-white p-4">
 					<div className="flex flex-wrap items-center gap-3">
 						<FilterIcon className="h-4 w-4 shrink-0 text-gray-400" />
 
@@ -360,24 +494,14 @@ const HistoryContent = () => {
 						</Select>
 
 						{/* Date range */}
-						<Input
-							type="date"
-							value={dateFrom}
-							onChange={(e) => {
-								setDateFrom(e.target.value);
+						<DateRangePicker
+							from={dateFrom}
+							to={dateTo}
+							onChange={(f, t) => {
+								setDateFrom(f);
+								setDateTo(t);
 								setPage(1);
 							}}
-							className="h-9 w-38 shadow-none focus-visible:ring-0"
-						/>
-						<span className="text-xs text-gray-400">to</span>
-						<Input
-							type="date"
-							value={dateTo}
-							onChange={(e) => {
-								setDateTo(e.target.value);
-								setPage(1);
-							}}
-							className="h-9 w-38 shadow-none focus-visible:ring-0"
 						/>
 
 						<Button
@@ -403,7 +527,7 @@ const HistoryContent = () => {
 				</div>
 
 				{/* Table */}
-				<div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+				<div className="overflow-hidden rounded-2xl border bg-white">
 					<Table>
 						<TableHeader>
 							<TableRow className="bg-gray-50/60 hover:bg-gray-50/60">

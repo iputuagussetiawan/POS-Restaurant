@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { discounts } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { count, desc, eq, getTableColumns, ilike, or } from 'drizzle-orm';
+import { and, count, desc, eq, getTableColumns, ilike, inArray, or } from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,
@@ -79,13 +79,24 @@ export const discountsRouter = createTRPCRouter({
 					.max(MAX_PAGE_SIZE)
 					.default(DEFAULT_PAGE_SIZE),
 				search: z.string().nullish(),
+				status: z.enum(['all', 'active', 'inactive']).default('all'),
 			})
 		)
 		.query(async ({ input }) => {
-			const { search, page, pageSize } = input;
-			const where = search
+			const { search, page, pageSize, status } = input;
+
+			const searchFilter = search
 				? or(ilike(discounts.name, `%${search}%`), ilike(discounts.code, `%${search}%`))
 				: undefined;
+
+			const statusFilter =
+				status === 'active'
+					? eq(discounts.isActive, true)
+					: status === 'inactive'
+						? eq(discounts.isActive, false)
+						: undefined;
+
+			const where = and(searchFilter, statusFilter);
 
 			const data = await db
 				.select({ ...getTableColumns(discounts) })
@@ -153,4 +164,14 @@ export const discountsRouter = createTRPCRouter({
 		}
 		return removed;
 	}),
+
+	bulkRemove: protectedProcedure
+		.input(z.object({ ids: z.array(z.string()).min(1) }))
+		.mutation(async ({ input }) => {
+			const removed = await db
+				.delete(discounts)
+				.where(inArray(discounts.id, input.ids))
+				.returning({ id: discounts.id });
+			return { count: removed.length };
+		}),
 });

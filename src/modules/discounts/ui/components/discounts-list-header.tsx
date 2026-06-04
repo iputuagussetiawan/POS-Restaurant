@@ -8,6 +8,13 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useDiscountsFilters } from '../../hooks/use-discounts-filter';
 import { DiscountSearchFilter } from './discount-search-filter';
 import NewDiscountDialog from './new-discount-dialog';
+import { cn } from '@/lib/utils';
+
+const STATUS_TABS = [
+	{ label: 'All', value: 'all' },
+	{ label: 'Active', value: 'active' },
+	{ label: 'Inactive', value: 'inactive' },
+] as const;
 
 const DiscountsListHeader = () => {
 	const [filters, setFilters] = useDiscountsFilters();
@@ -30,6 +37,24 @@ const DiscountsListHeader = () => {
 							Manage discount codes and promotions.
 						</p>
 					</div>
+				</div>
+
+				{/* status tabs */}
+				<div className="mt-3 flex gap-x-1">
+					{STATUS_TABS.map((tab) => (
+						<button
+							key={tab.value}
+							onClick={() => setFilters({ status: tab.value, page: DEFAULT_PAGE })}
+							className={cn(
+								'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+								filters.status === tab.value
+									? 'bg-primary text-primary-foreground'
+									: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+							)}
+						>
+							{tab.label}
+						</button>
+					))}
 				</div>
 			</div>
 

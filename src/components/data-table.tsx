@@ -2,6 +2,7 @@
 
 import {
 	ColumnDef,
+	RowSelectionState,
 	SortingState,
 	flexRender,
 	getCoreRowModel,
@@ -22,14 +23,21 @@ interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
 	onRowClick?: (row: TData) => void;
+	rowSelection?: RowSelectionState;
+	onRowSelectionChange?: (selection: RowSelectionState) => void;
 }
 
 export function DataTable<TData, TValue>({
 	columns,
 	data,
 	onRowClick,
+	rowSelection,
+	onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = useState<SortingState>([]);
+	const [internalSelection, setInternalSelection] = useState<RowSelectionState>({});
+
+	const controlled = rowSelection !== undefined && onRowSelectionChange !== undefined;
 
 	const table = useReactTable({
 		data,
@@ -37,7 +45,12 @@ export function DataTable<TData, TValue>({
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		onSortingChange: setSorting,
-		state: { sorting },
+		enableRowSelection: controlled,
+		onRowSelectionChange: controlled ? onRowSelectionChange : setInternalSelection,
+		state: {
+			sorting,
+			rowSelection: controlled ? rowSelection : internalSelection,
+		},
 	});
 
 	return (
