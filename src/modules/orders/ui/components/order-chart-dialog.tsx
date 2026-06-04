@@ -19,7 +19,6 @@ import {
 	CartesianGrid,
 	Tooltip,
 	ResponsiveContainer,
-	Legend,
 } from 'recharts';
 import { TrendingUpIcon, ClockIcon, CreditCardIcon, BarChart2Icon } from 'lucide-react';
 import { format } from 'date-fns';

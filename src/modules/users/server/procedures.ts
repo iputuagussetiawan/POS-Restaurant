@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { db } from '@/db';
-import { user, roleEnum } from '@/db/schema';
+import { user, roleEnum, account } from '@/db/schema';
 import { createTRPCRouter, adminProcedure } from '@/trpc/init';
 import { and, asc, count, eq, ilike } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
+import { nanoid } from 'nanoid';
+import { hashPassword } from 'better-auth/crypto';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,
@@ -14,6 +16,54 @@ import {
 const VALID_ROLES = roleEnum.enumValues;
 
 export const usersRouter = createTRPCRouter({
+	create: adminProcedure
+		.input(
+			z.object({
+				name: z.string().min(1, 'Name is required'),
+				email: z.string().email('Invalid email'),
+				password: z.string().min(8, 'Password must be at least 8 characters'),
+				role: z.enum(VALID_ROLES).default('pending'),
+			})
+		)
+		.mutation(async ({ input }) => {
+			const [existing] = await db
+				.select({ id: user.id })
+				.from(user)
+				.where(eq(user.email, input.email.toLowerCase()));
+			if (existing) {
+				throw new TRPCError({ code: 'CONFLICT', message: 'Email already in use.' });
+			}
+
+			const userId = nanoid();
+			const hashedPassword = await hashPassword(input.password);
+			const now = new Date();
+
+			const [created] = await db
+				.insert(user)
+				.values({
+					id: userId,
+					name: input.name,
+					email: input.email.toLowerCase(),
+					emailVerified: true,
+					role: input.role,
+					createdAt: now,
+					updatedAt: now,
+				})
+				.returning();
+
+			await db.insert(account).values({
+				id: nanoid(),
+				accountId: userId,
+				providerId: 'credential',
+				userId,
+				password: hashedPassword,
+				createdAt: now,
+				updatedAt: now,
+			});
+
+			return created;
+		}),
+
 	getAll: adminProcedure
 		.input(
 			z.object({
@@ -24,7 +74,7 @@ export const usersRouter = createTRPCRouter({
 					.max(MAX_PAGE_SIZE)
 					.default(DEFAULT_PAGE_SIZE),
 				search: z.string().nullish(),
-				role: z.enum(['admin', 'manager', 'cashier', 'pending']).nullish(),
+				role: z.enum(VALID_ROLES).nullish(),
 				status: z.enum(['active', 'banned']).nullish(),
 			})
 		)

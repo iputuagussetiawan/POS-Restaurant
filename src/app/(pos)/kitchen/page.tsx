@@ -23,6 +23,10 @@ const KitchenPage = async () => {
 					<KitchenView />
 				</Suspense>
 			</HydrationBoundary>
+			<footer className="border-t border-white/10 bg-gray-950 px-6 py-3 text-center text-xs text-gray-700">
+				&copy; {new Date().getFullYear()} Green Line Software &mdash; Food Order Kitchen
+				Display
+			</footer>
 		</div>
 	);
 };

@@ -2,9 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SearchIcon, XIcon, ChevronDownIcon, CheckIcon } from 'lucide-react';
+import { SearchIcon, XIcon, ChevronDownIcon, CheckIcon, UserPlusIcon } from 'lucide-react';
 import { useUsersFilters } from '../../hooks/use-users-filter';
 import { DEFAULT_PAGE } from '../../../../../constants';
+import { useState } from 'react';
+import CreateUserDialog from './create-user-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
 	DropdownMenu,
@@ -32,6 +34,7 @@ const STATUSES: { value: Status; label: string; color: string }[] = [
 
 const UsersListHeader = () => {
 	const [filters, setFilters] = useUsersFilters();
+	const [createOpen, setCreateOpen] = useState(false);
 
 	const isAnyFilterActive = !!(filters.search || filters.role || filters.status);
 
@@ -39,14 +42,26 @@ const UsersListHeader = () => {
 
 	return (
 		<>
+			<CreateUserDialog open={createOpen} onOpenChange={setCreateOpen} />
+
 			<div className="border-b bg-background px-4 py-4 md:px-8 md:py-5">
-				<div className="space-y-0.5">
-					<h1 className="text-xl font-bold tracking-tight md:text-2xl">
-						User Management
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						Manage roles and access for all users.
-					</p>
+				<div className="flex items-center justify-between">
+					<div className="space-y-0.5">
+						<h1 className="text-xl font-bold tracking-tight md:text-2xl">
+							User Management
+						</h1>
+						<p className="text-sm text-muted-foreground">
+							Manage roles and access for all users.
+						</p>
+					</div>
+					<Button
+						onClick={() => setCreateOpen(true)}
+						className="gap-2 bg-green-700 hover:bg-green-800"
+						size="sm"
+					>
+						<UserPlusIcon className="h-4 w-4" />
+						Create User
+					</Button>
 				</div>
 			</div>
 

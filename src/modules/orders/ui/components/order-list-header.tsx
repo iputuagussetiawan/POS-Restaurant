@@ -21,7 +21,6 @@ import {
 	endOfDay,
 	subDays,
 	startOfWeek,
-	endOfWeek,
 	startOfMonth,
 	endOfMonth,
 } from 'date-fns';

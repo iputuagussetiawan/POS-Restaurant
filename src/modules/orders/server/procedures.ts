@@ -217,7 +217,7 @@ export const ordersRouter = createTRPCRouter({
 				sortOrder: z.enum(['asc', 'desc']).default('desc'),
 			})
 		)
-		.query(async ({ input, ctx }) => {
+		.query(async ({ input }) => {
 			const { page, pageSize, status, search, dateFrom, dateTo, sortOrder } = input;
 			const { timezone } = await getSettings();
 

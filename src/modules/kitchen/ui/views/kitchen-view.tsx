@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Image from 'next/image';
+import MenuProfile from '@/modules/pos/ui/components/menu-profile';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorState from '@/components/error-state';
@@ -353,7 +354,6 @@ const OrderCard = ({
 	const PayIcon = order.paymentMethod ? PAYMENT_ICON[order.paymentMethod] : null;
 	const mins = Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60_000);
 	const urgent = mins >= 15;
-	const warning = mins >= 8;
 
 	return (
 		<div
@@ -558,6 +558,7 @@ const KitchenContent = () => {
 	useEffect(() => {
 		const id = setInterval(invalidateAll, 30_000);
 		return () => clearInterval(id);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const updateStatus = useMutation(
@@ -614,13 +615,14 @@ const KitchenContent = () => {
 						</div>
 					</div>
 
-					{/* clock + status */}
-					<div className="flex items-center gap-4">
+					{/* clock + status + profile */}
+					<div className="flex items-center gap-3">
 						<LiveClock />
 						<div className="flex items-center gap-1.5 rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1">
 							<WifiIcon className="h-3 w-3 text-green-400" />
 							<span className="text-[11px] font-medium text-green-400">Live</span>
 						</div>
+						<MenuProfile dark />
 					</div>
 				</div>
 

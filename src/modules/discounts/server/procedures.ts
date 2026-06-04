@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { discounts } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { and, count, desc, eq, getTableColumns, ilike, or } from 'drizzle-orm';
+import { count, desc, eq, getTableColumns, ilike, or } from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,
