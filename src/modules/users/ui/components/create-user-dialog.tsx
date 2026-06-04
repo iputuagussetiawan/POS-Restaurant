@@ -189,7 +189,7 @@ const CreateUserDialog = ({ open, onOpenChange }: Props) => {
 												<SelectValue />
 											</SelectTrigger>
 										</FormControl>
-										<SelectContent>
+										<SelectContent className="z-[10001]">
 											{ROLES.map((r) => (
 												<SelectItem key={r.value} value={r.value}>
 													<span className={r.color}>{r.label}</span>
