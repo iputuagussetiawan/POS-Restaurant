@@ -12,7 +12,14 @@ import {
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { BoxIcon, TagIcon, UsersIcon, LayoutDashboardIcon, SettingsIcon } from 'lucide-react';
+import {
+	BoxIcon,
+	TagIcon,
+	UsersIcon,
+	LayoutDashboardIcon,
+	SettingsIcon,
+	HistoryIcon,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,6 +42,11 @@ const mainSection = [
 		icon: TagIcon,
 		label: 'Product Categories',
 		href: '/admin/categories',
+	},
+	{
+		icon: HistoryIcon,
+		label: 'Order History',
+		href: '/admin/history',
 	},
 ];
 

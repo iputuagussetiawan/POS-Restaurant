@@ -7,9 +7,11 @@ import { ordersRouter } from '@/modules/orders/server/procedures';
 import { customersRouter } from '@/modules/customers/server/procedures';
 import { analyticsRouter } from '@/modules/analytics/server/procedures';
 import { companyRouter } from '@/modules/company/server/procedures';
+import { historyRouter } from '@/modules/history/server/procedures';
 
 export const appRouter = createTRPCRouter({
 	analytics: analyticsRouter,
+	history: historyRouter,
 	categories: categoriesRouter,
 	products: productsRouter,
 	users: usersRouter,
