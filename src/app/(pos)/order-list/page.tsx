@@ -17,7 +17,8 @@ const loadFilters = createLoader({
 	page: parseAsInteger.withDefault(1),
 	search: parseAsString.withDefault(''),
 	status: parseAsStringEnum(['pending', 'processing', 'completed', 'cancelled'] as const),
-	date: parseAsIsoDate,
+	dateFrom: parseAsIsoDate,
+	dateTo: parseAsIsoDate,
 });
 
 interface Props {
@@ -26,8 +27,6 @@ interface Props {
 
 const OrderListPage = async ({ searchParams }: Props) => {
 	const filters = await loadFilters(searchParams);
-	const today = new Date();
-	const date = filters.date ?? today;
 
 	const queryClient = getQueryClient();
 	void queryClient.prefetchQuery(
@@ -35,7 +34,8 @@ const OrderListPage = async ({ searchParams }: Props) => {
 			page: filters.page,
 			search: filters.search || undefined,
 			status: filters.status ?? undefined,
-			date: date.toISOString().split('T')[0],
+			dateFrom: filters.dateFrom?.toISOString().split('T')[0] ?? undefined,
+			dateTo: filters.dateTo?.toISOString().split('T')[0] ?? undefined,
 		})
 	);
 

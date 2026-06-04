@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 const mainMenu = [
 	{ icon: LayoutDashboardIcon, label: 'POS', href: '/pos' },
 	{ icon: ListIcon, label: 'Order List', href: '/order-list' },
-	{ icon: HistoryIcon, label: 'History', href: '/history' },
+	{ icon: HistoryIcon, label: 'My History', href: '/cashier-history' },
 	{ icon: CircleDollarSign, label: 'Bill', href: '/bill' },
 ];
 

@@ -17,10 +17,11 @@ import {
 	SearchIcon,
 	BadgeCheckIcon,
 	XIcon,
+	TicketPercentIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTRPC } from '@/trpc/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/use-debounce';
 import { authClient } from '@/lib/auth-client';
 import { useCurrency } from '@/modules/company/hooks/use-currency';
@@ -35,6 +36,7 @@ interface PaymentModalProps {
 		customerName: string;
 		customerId?: string;
 		note: string;
+		discountCode?: string;
 	}) => void;
 	isPending: boolean;
 	subtotal: number;
@@ -75,6 +77,7 @@ const PaymentModal = ({
 	total,
 }: PaymentModalProps) => {
 	const trpc = useTRPC();
+	const queryClient = useQueryClient();
 	const { format: formatCurrency } = useCurrency();
 	const { data: session } = authClient.useSession();
 
@@ -84,6 +87,15 @@ const PaymentModal = ({
 	const [customerId, setCustomerId] = useState<string | undefined>();
 	const [isMember, setIsMember] = useState(false);
 	const [note, setNote] = useState('');
+	const [discountInput, setDiscountInput] = useState('');
+	const [appliedDiscount, setAppliedDiscount] = useState<{
+		code: string;
+		type: 'percentage' | 'fixed';
+		value: number;
+		discountAmount: number;
+	} | null>(null);
+	const [discountError, setDiscountError] = useState('');
+	const [discountChecking, setDiscountChecking] = useState(false);
 
 	const debouncedPhone = useDebounce(phone, 500);
 
@@ -112,15 +124,64 @@ const PaymentModal = ({
 		setIsMember(false);
 	};
 
+	const clearDiscount = () => {
+		setDiscountInput('');
+		setAppliedDiscount(null);
+		setDiscountError('');
+	};
+
+	const applyDiscount = async () => {
+		const code = discountInput.trim().toUpperCase();
+		if (!code) return;
+		setDiscountError('');
+		setDiscountChecking(true);
+		try {
+			const discount = await queryClient.fetchQuery(
+				trpc.discounts.getByCode.queryOptions({ code })
+			);
+			const preTaxTotal = total;
+			const amt =
+				discount.type === 'percentage'
+					? (preTaxTotal * Number(discount.value)) / 100
+					: Number(discount.value);
+			setAppliedDiscount({
+				code: discount.code,
+				type: discount.type,
+				value: Number(discount.value),
+				discountAmount: Math.min(amt, preTaxTotal),
+			});
+			setDiscountInput(discount.code);
+		} catch (e: unknown) {
+			const msg =
+				e instanceof Error
+					? e.message.replace(/^TRPCClientError: /, '')
+					: 'Invalid discount code.';
+			setDiscountError(msg);
+			setAppliedDiscount(null);
+		} finally {
+			setDiscountChecking(false);
+		}
+	};
+
+	const discountAmount = appliedDiscount?.discountAmount ?? 0;
+	const finalTotal = Math.max(0, total - discountAmount);
+
 	const handleClose = () => {
 		clearPhone();
+		clearDiscount();
 		setNote('');
 		setMethod('cash');
 		onClose();
 	};
 
 	const handleConfirm = () => {
-		onConfirm({ paymentMethod: method, customerName, customerId, note });
+		onConfirm({
+			paymentMethod: method,
+			customerName,
+			customerId,
+			note,
+			discountCode: appliedDiscount?.code,
+		});
 	};
 
 	return (
@@ -147,11 +208,81 @@ const PaymentModal = ({
 								<span>{formatCurrency(serviceCharge)}</span>
 							</div>
 						)}
+						{appliedDiscount && (
+							<div className="flex justify-between text-sm font-medium text-green-700">
+								<span className="flex items-center gap-1.5">
+									<TicketPercentIcon className="h-3.5 w-3.5" />
+									Discount ({appliedDiscount.code})
+								</span>
+								<span>-{formatCurrency(discountAmount)}</span>
+							</div>
+						)}
 						<Separator className="my-1" />
 						<div className="flex justify-between text-base font-bold">
 							<span className="text-gray-900">Total</span>
-							<span className="text-green-700">{formatCurrency(total)}</span>
+							<span className="text-green-700">{formatCurrency(finalTotal)}</span>
 						</div>
+					</div>
+
+					{/* Discount code */}
+					<div>
+						<Label className="mb-2 block text-xs font-semibold tracking-wider text-gray-400 uppercase">
+							Discount Code
+							<span className="ml-1 font-normal normal-case">(optional)</span>
+						</Label>
+						{appliedDiscount ? (
+							<div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+								<TicketPercentIcon className="h-4 w-4 shrink-0 text-green-600" />
+								<div className="min-w-0 flex-1">
+									<p className="text-xs font-semibold text-green-800">
+										{appliedDiscount.code}
+									</p>
+									<p className="text-[10px] text-green-600">
+										{appliedDiscount.type === 'percentage'
+											? `${appliedDiscount.value}% off`
+											: `${formatCurrency(appliedDiscount.value)} off`}
+										{' · '}saving {formatCurrency(discountAmount)}
+									</p>
+								</div>
+								<button onClick={clearDiscount}>
+									<XIcon className="h-4 w-4 text-green-500 hover:text-green-700" />
+								</button>
+							</div>
+						) : (
+							<div className="flex gap-2">
+								<div className="relative flex-1">
+									<TicketPercentIcon className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+									<Input
+										value={discountInput}
+										onChange={(e) =>
+											setDiscountInput(
+												e.target.value.toUpperCase().replace(/\s/g, '')
+											)
+										}
+										onKeyDown={(e) => e.key === 'Enter' && applyDiscount()}
+										placeholder="e.g. SUMMER20"
+										className="h-9 border-gray-200 pl-9 font-mono text-sm uppercase shadow-none focus-visible:border-green-500 focus-visible:ring-0"
+									/>
+								</div>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="h-9 shrink-0 px-4"
+									onClick={applyDiscount}
+									disabled={!discountInput.trim() || discountChecking}
+								>
+									{discountChecking ? (
+										<Loader2Icon className="h-3.5 w-3.5 animate-spin" />
+									) : (
+										'Apply'
+									)}
+								</Button>
+							</div>
+						)}
+						{discountError && (
+							<p className="mt-1.5 text-xs text-red-500">{discountError}</p>
+						)}
 					</div>
 
 					{/* Cashier info */}
@@ -331,7 +462,7 @@ const PaymentModal = ({
 						) : (
 							<>
 								<CheckCircleIcon className="mr-2 h-4 w-4" />
-								Confirm · {formatCurrency(total)}
+								Confirm · {formatCurrency(finalTotal)}
 							</>
 						)}
 					</Button>

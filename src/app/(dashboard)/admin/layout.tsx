@@ -23,6 +23,10 @@ const Layout = async ({ children }: Props) => {
 		redirect('/pending');
 	}
 
+	if (session.user.role === 'cashier') {
+		redirect('/pos');
+	}
+
 	return (
 		<SidebarProvider>
 			<DashboardSidebar />

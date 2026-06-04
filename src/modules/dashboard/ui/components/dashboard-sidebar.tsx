@@ -19,6 +19,7 @@ import {
 	LayoutDashboardIcon,
 	SettingsIcon,
 	HistoryIcon,
+	TicketPercentIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -47,6 +48,11 @@ const mainSection = [
 		icon: HistoryIcon,
 		label: 'Order History',
 		href: '/admin/history',
+	},
+	{
+		icon: TicketPercentIcon,
+		label: 'Discounts',
+		href: '/admin/discounts',
 	},
 ];
 

@@ -9,9 +9,11 @@ const page = async () => {
 		headers: await headers(),
 	});
 
-	//jika ada session di redirect ke halaman home
-	if (!!session) {
-		redirect('/');
+	if (session) {
+		if (session.user.role === 'cashier') {
+			redirect('/pos');
+		}
+		redirect('/admin');
 	}
 	return <SignInView />;
 };

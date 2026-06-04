@@ -29,6 +29,8 @@ export const orders = pgTable('orders', {
 	cancelReason: text('cancel_reason'),
 	paymentMethod: paymentMethodEnum('payment_method'),
 	customerName: text('customer_name'),
+	discountCode: text('discount_code'),
+	discountAmount: decimal('discount_amount', { precision: 10, scale: 2 }).notNull().default('0'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });

@@ -66,6 +66,8 @@ type OrderFull = {
 	subtotal: string;
 	tax: string;
 	serviceCharge: string;
+	discountAmount?: string | null;
+	discountCode?: string | null;
 	total: string;
 	note?: string | null;
 	paymentMethod?: string | null;
@@ -404,6 +406,15 @@ const Receipt = ({ order }: ReceiptProps) => {
 							<div className="flex justify-between text-sm text-gray-500">
 								<span>Service ({serviceRate}%)</span>
 								<span>{formatCurrency(order.serviceCharge)}</span>
+							</div>
+						)}
+						{Number(order.discountAmount ?? 0) > 0 && (
+							<div className="flex justify-between text-sm font-medium text-green-700">
+								<span>
+									Discount
+									{order.discountCode ? ` (${order.discountCode})` : ''}
+								</span>
+								<span>-{formatCurrency(order.discountAmount ?? '0')}</span>
 							</div>
 						)}
 						<div className="flex justify-between border-t pt-2 text-base font-bold text-gray-900">

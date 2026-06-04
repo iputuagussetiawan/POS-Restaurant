@@ -80,11 +80,13 @@ const PosView = () => {
 		customerName,
 		customerId,
 		note,
+		discountCode,
 	}: {
 		paymentMethod: 'cash' | 'card' | 'qris' | 'transfer';
 		customerName: string;
 		customerId?: string;
 		note: string;
+		discountCode?: string;
 	}) => {
 		placeOrder.mutate({
 			items: items.map(({ product, quantity }) => ({
@@ -97,6 +99,7 @@ const PosView = () => {
 			customerName: customerName || undefined,
 			customerId: customerId || undefined,
 			note: note || undefined,
+			discountCode: discountCode || undefined,
 		});
 	};
 

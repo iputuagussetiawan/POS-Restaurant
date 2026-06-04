@@ -8,6 +8,7 @@ import { customersRouter } from '@/modules/customers/server/procedures';
 import { analyticsRouter } from '@/modules/analytics/server/procedures';
 import { companyRouter } from '@/modules/company/server/procedures';
 import { historyRouter } from '@/modules/history/server/procedures';
+import { discountsRouter } from '@/modules/discounts/server/procedures';
 
 export const appRouter = createTRPCRouter({
 	analytics: analyticsRouter,
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
 	orders: ordersRouter,
 	customers: customersRouter,
 	company: companyRouter,
+	discounts: discountsRouter,
 });
 
 export type AppRouter = typeof appRouter;

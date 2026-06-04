@@ -9,8 +9,10 @@ import {
 	customers,
 	user,
 	companySettings,
+	discounts,
 } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
+import { TRPCError } from '@trpc/server';
 import { and, count, desc, eq, getTableColumns, gte, ilike, inArray, lt, sql } from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
@@ -85,6 +87,7 @@ export const ordersRouter = createTRPCRouter({
 				paymentMethod: z.enum(paymentMethodEnum.enumValues),
 				customerName: z.string().optional(),
 				customerId: z.string().optional(),
+				discountCode: z.string().optional(),
 			})
 		)
 		.mutation(async ({ input, ctx }) => {
@@ -92,7 +95,64 @@ export const ordersRouter = createTRPCRouter({
 			const subtotal = input.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 			const tax = subtotal * (taxRate / 100);
 			const serviceCharge = subtotal * (serviceRate / 100);
-			const total = subtotal + tax + serviceCharge;
+			const preTaxTotal = subtotal + tax + serviceCharge;
+
+			// Resolve discount
+			let discountAmount = 0;
+			let appliedDiscountCode: string | undefined;
+
+			if (input.discountCode) {
+				const code = input.discountCode.toUpperCase();
+				const [discount] = await db
+					.select()
+					.from(discounts)
+					.where(eq(discounts.code, code));
+
+				if (!discount)
+					throw new TRPCError({
+						code: 'BAD_REQUEST',
+						message: 'Discount code not found.',
+					});
+				if (!discount.isActive)
+					throw new TRPCError({
+						code: 'BAD_REQUEST',
+						message: 'This discount is inactive.',
+					});
+				if (discount.expiresAt && discount.expiresAt < new Date())
+					throw new TRPCError({
+						code: 'BAD_REQUEST',
+						message: 'This discount has expired.',
+					});
+				if (discount.maxUses != null && discount.usedCount >= discount.maxUses)
+					throw new TRPCError({
+						code: 'BAD_REQUEST',
+						message: 'This discount has reached its usage limit.',
+					});
+				if (
+					discount.minOrderAmount != null &&
+					preTaxTotal < Number(discount.minOrderAmount)
+				) {
+					throw new TRPCError({
+						code: 'BAD_REQUEST',
+						message: `Minimum order amount for this discount is ${Number(discount.minOrderAmount).toFixed(2)}.`,
+					});
+				}
+
+				discountAmount =
+					discount.type === 'percentage'
+						? (preTaxTotal * Number(discount.value)) / 100
+						: Number(discount.value);
+
+				discountAmount = Math.min(discountAmount, preTaxTotal);
+				appliedDiscountCode = code;
+
+				await db
+					.update(discounts)
+					.set({ usedCount: discount.usedCount + 1, updatedAt: new Date() })
+					.where(eq(discounts.id, discount.id));
+			}
+
+			const total = Math.max(0, preTaxTotal - discountAmount);
 
 			const [order] = await db
 				.insert(orders)
@@ -103,6 +163,8 @@ export const ordersRouter = createTRPCRouter({
 					subtotal: String(subtotal.toFixed(2)),
 					tax: String(tax.toFixed(2)),
 					serviceCharge: String(serviceCharge.toFixed(2)),
+					discountAmount: String(discountAmount.toFixed(2)),
+					discountCode: appliedDiscountCode,
 					total: String(total.toFixed(2)),
 					note: input.note,
 					paymentMethod: input.paymentMethod,
@@ -150,27 +212,25 @@ export const ordersRouter = createTRPCRouter({
 					.default(DEFAULT_PAGE_SIZE),
 				status: z.enum(orderStatusEnum.enumValues).nullish(),
 				search: z.string().nullish(),
-				date: z.string().nullish(),
+				dateFrom: z.string().nullish(),
+				dateTo: z.string().nullish(),
 			})
 		)
 		.query(async ({ input, ctx }) => {
-			const { page, pageSize, status, search, date } = input;
+			const { page, pageSize, status, search, dateFrom, dateTo } = input;
 			const { timezone } = await getSettings();
 
-			let dayStart: Date | undefined;
-			let dayEnd: Date | undefined;
-			if (date) {
-				const bounds = dayBoundsInTz(date, timezone);
-				dayStart = bounds.start;
-				dayEnd = bounds.end;
-			}
+			let rangeStart: Date | undefined;
+			let rangeEnd: Date | undefined;
+			if (dateFrom) rangeStart = dayBoundsInTz(dateFrom, timezone).start;
+			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
 
 			const where = and(
 				eq(orders.userId, ctx.auth.user.id),
 				status ? eq(orders.status, status) : undefined,
 				search ? ilike(orders.id, `%${search}%`) : undefined,
-				dayStart ? gte(orders.createdAt, dayStart) : undefined,
-				dayEnd ? lt(orders.createdAt, dayEnd) : undefined
+				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
+				rangeEnd ? lt(orders.createdAt, rangeEnd) : undefined
 			);
 
 			const data = await db
@@ -197,6 +257,43 @@ export const ordersRouter = createTRPCRouter({
 				total: total.count,
 				totalPages: Math.ceil(total.count / pageSize),
 			};
+		}),
+
+	statusCounts: protectedProcedure
+		.input(
+			z.object({
+				search: z.string().nullish(),
+				dateFrom: z.string().nullish(),
+				dateTo: z.string().nullish(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { search, dateFrom, dateTo } = input;
+			const { timezone } = await getSettings();
+
+			let rangeStart: Date | undefined;
+			let rangeEnd: Date | undefined;
+			if (dateFrom) rangeStart = dayBoundsInTz(dateFrom, timezone).start;
+			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
+
+			const where = and(
+				eq(orders.userId, ctx.auth.user.id),
+				search ? ilike(orders.id, `%${search}%`) : undefined,
+				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
+				rangeEnd ? lt(orders.createdAt, rangeEnd) : undefined
+			);
+
+			const rows = await db
+				.select({ status: orders.status, count: count() })
+				.from(orders)
+				.where(where)
+				.groupBy(orders.status);
+
+			const result = { pending: 0, processing: 0, completed: 0, cancelled: 0 };
+			for (const row of rows) {
+				if (row.status in result) result[row.status as keyof typeof result] = row.count;
+			}
+			return result;
 		}),
 
 	getOne: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
@@ -248,6 +345,85 @@ export const ordersRouter = createTRPCRouter({
 				.where(eq(orders.id, input.id))
 				.returning();
 			return updated;
+		}),
+
+	chartData: protectedProcedure
+		.input(
+			z.object({
+				search: z.string().nullish(),
+				dateFrom: z.string().nullish(),
+				dateTo: z.string().nullish(),
+			})
+		)
+		.query(async ({ input, ctx }) => {
+			const { search, dateFrom, dateTo } = input;
+			const { timezone } = await getSettings();
+
+			let rangeStart: Date | undefined;
+			let rangeEnd: Date | undefined;
+			if (dateFrom) rangeStart = dayBoundsInTz(dateFrom, timezone).start;
+			if (dateTo) rangeEnd = dayBoundsInTz(dateTo, timezone).end;
+
+			const where = and(
+				eq(orders.userId, ctx.auth.user.id),
+				search ? ilike(orders.id, `%${search}%`) : undefined,
+				rangeStart ? gte(orders.createdAt, rangeStart) : undefined,
+				rangeEnd ? lt(orders.createdAt, rangeEnd) : undefined
+			);
+
+			// Orders & revenue by day
+			const byDay = await db
+				.select({
+					date: sql<string>`to_char(${orders.createdAt}, 'YYYY-MM-DD')`,
+					orderCount: count(),
+					revenue: sql<string>`coalesce(sum(cast(${orders.total} as numeric)), 0)`,
+				})
+				.from(orders)
+				.where(where)
+				.groupBy(sql`to_char(${orders.createdAt}, 'YYYY-MM-DD')`)
+				.orderBy(sql`to_char(${orders.createdAt}, 'YYYY-MM-DD')`);
+
+			// Orders by hour of day (0-23)
+			const byHour = await db
+				.select({
+					hour: sql<number>`cast(extract(hour from ${orders.createdAt}) as int)`,
+					orderCount: count(),
+				})
+				.from(orders)
+				.where(where)
+				.groupBy(sql`extract(hour from ${orders.createdAt})`)
+				.orderBy(sql`extract(hour from ${orders.createdAt})`);
+
+			// Payment method breakdown
+			const byPayment = await db
+				.select({
+					method: orders.paymentMethod,
+					orderCount: count(),
+					revenue: sql<string>`coalesce(sum(cast(${orders.total} as numeric)), 0)`,
+				})
+				.from(orders)
+				.where(where)
+				.groupBy(orders.paymentMethod);
+
+			// Status breakdown
+			const byStatus = await db
+				.select({
+					status: orders.status,
+					orderCount: count(),
+				})
+				.from(orders)
+				.where(where)
+				.groupBy(orders.status);
+
+			// Fill hour gaps
+			const hourMap = new Map(byHour.map((r) => [r.hour, r.orderCount]));
+			const hoursFilled = Array.from({ length: 24 }, (_, h) => ({
+				hour: h,
+				label: `${String(h).padStart(2, '0')}:00`,
+				orderCount: hourMap.get(h) ?? 0,
+			}));
+
+			return { byDay, byHour: hoursFilled, byPayment, byStatus };
 		}),
 
 	updatePaymentMethod: protectedProcedure

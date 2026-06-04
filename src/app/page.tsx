@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -90,6 +91,11 @@ const PLANS = [
 
 export default async function LandingPage() {
 	const session = await auth.api.getSession({ headers: await headers() });
+
+	if (session?.user?.role === 'cashier') {
+		redirect('/pos');
+	}
+
 	const user = session?.user ?? null;
 
 	return (
