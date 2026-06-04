@@ -724,10 +724,7 @@ const KitchenContent = () => {
 								key={order.id}
 								order={{
 									...order,
-									createdAt:
-										typeof order.createdAt === 'string'
-											? order.createdAt
-											: order.createdAt.toISOString(),
+									createdAt: String(order.createdAt),
 								}}
 								tab={tab}
 								onAction={handleAction}
