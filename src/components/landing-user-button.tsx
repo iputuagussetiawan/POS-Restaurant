@@ -24,8 +24,6 @@ import {
 	ShieldIcon,
 } from 'lucide-react';
 
-type Role = 'admin' | 'manager' | 'cashier' | 'pending' | null | undefined;
-
 const ROLE_CONFIG: Record<string, { label: string; icon: React.ElementType; badge: string }> = {
 	admin: { label: 'Admin', icon: CrownIcon, badge: 'border-red-200 bg-red-50 text-red-700' },
 	manager: {

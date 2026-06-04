@@ -298,7 +298,7 @@ const OrderCard = ({
 					{/* note */}
 					{order.note && (
 						<p className="truncate text-[11px] text-gray-400 italic" title={order.note}>
-							"{order.note}"
+							&quot;{order.note}&quot;
 						</p>
 					)}
 				</div>
@@ -405,7 +405,6 @@ const OrderRow = ({
 /* ── Main content ───────────────────────────────────────────────────────── */
 const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 	const trpc = useTRPC();
-	const { format: formatCurrency } = useCurrency();
 	const queryClient = useQueryClient();
 	const [filters, setFilters] = useOrdersFilters();
 	const [updatingId, setUpdatingId] = useState<string | null>(null);

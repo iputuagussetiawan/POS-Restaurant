@@ -10,7 +10,7 @@ import {
 	companySettings,
 } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { and, count, desc, eq, getTableColumns, gte, ilike, lt, sql, sum, ne } from 'drizzle-orm';
+import { and, count, desc, eq, getTableColumns, gte, ilike, lt, sql, ne } from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,

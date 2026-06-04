@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { orders, orderItems, products, customers } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { and, count, desc, eq, gte, sql, sum, ne } from 'drizzle-orm';
+import { and, desc, eq, gte, sql, ne, count } from 'drizzle-orm';
 
 export const analyticsRouter = createTRPCRouter({
 	summary: protectedProcedure.query(async () => {

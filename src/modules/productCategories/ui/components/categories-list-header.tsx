@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { PlusIcon, XIcon } from 'lucide-react';
+import { XIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import NewAgentDialog from './new-agent-dialog';
 import { DEFAULT_PAGE } from '../../../../../constants';

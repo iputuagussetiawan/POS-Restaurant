@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { customers } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
-import { eq, ilike, count, desc } from 'drizzle-orm';
+import { eq, ilike, desc } from 'drizzle-orm';
 
 export const customersRouter = createTRPCRouter({
 	getByPhone: protectedProcedure

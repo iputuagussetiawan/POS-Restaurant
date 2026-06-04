@@ -1,22 +1,17 @@
 'use client';
 
 import { useTRPC } from '@/trpc/client';
-import { useSuspenseQuery, useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
 	TrendingUpIcon,
 	ShoppingCartIcon,
 	UsersIcon,
-	PackageIcon,
 	TrendingDownIcon,
 	MinusIcon,
 	BanknoteIcon,
 	CreditCardIcon,
 	QrCodeIcon,
 	ArrowRightLeftIcon,
-	ClockIcon,
-	CheckCircleIcon,
-	XCircleIcon,
-	RefreshCwIcon,
 } from 'lucide-react';
 import {
 	AreaChart,
@@ -31,7 +26,6 @@ import {
 	PieChart,
 	Pie,
 	Cell,
-	Legend,
 } from 'recharts';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -65,7 +59,6 @@ const STATUS_COLORS: Record<string, string> = {
 	completed: '#16a34a',
 	cancelled: '#ef4444',
 };
-const PIE_FALLBACK_COLORS = ['#16a34a', '#2563eb', '#9333ea', '#ea580c', '#f59e0b'];
 
 /* ── KPI Card ───────────────────────────────────────────────────────────── */
 const KpiCard = ({

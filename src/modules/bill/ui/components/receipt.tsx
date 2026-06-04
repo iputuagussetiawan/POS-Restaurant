@@ -509,7 +509,9 @@ const Receipt = ({ order }: ReceiptProps) => {
 								<p className="mb-1 text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
 									Note
 								</p>
-								<p className="text-xs text-gray-500 italic">"{order.note}"</p>
+								<p className="text-xs text-gray-500 italic">
+									&quot;{order.note}&quot;
+								</p>
 							</div>
 						</>
 					)}

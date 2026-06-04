@@ -13,6 +13,7 @@ export const CategoriesSearchFilter = () => {
 
 	useEffect(() => {
 		setFilters({ search: debouncedValue, page: 1 });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debouncedValue]);
 
 	useEffect(() => {

@@ -11,9 +11,6 @@ import {
 	ReceiptTextIcon,
 	XIcon,
 	Loader2Icon,
-	ClockIcon,
-	CheckCircleIcon,
-	RefreshCwIcon,
 	HashIcon,
 } from 'lucide-react';
 import { format } from 'date-fns';
