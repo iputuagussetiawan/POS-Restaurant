@@ -16,7 +16,7 @@ import type { SearchParams } from 'nuqs';
 const loadFilters = createLoader({
 	page: parseAsInteger.withDefault(1),
 	search: parseAsString.withDefault(''),
-	status: parseAsStringEnum(['pending', 'processing', 'completed', 'cancelled']),
+	status: parseAsStringEnum(['pending', 'processing', 'completed', 'cancelled'] as const),
 	date: parseAsIsoDate,
 });
 
