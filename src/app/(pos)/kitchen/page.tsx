@@ -1,4 +1,3 @@
-import HeaderPOS from '@/modules/pos/ui/components/header';
 import KitchenView, { KitchenViewLoading } from '@/modules/kitchen/ui/views/kitchen-view';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -19,7 +18,6 @@ const KitchenPage = async () => {
 
 	return (
 		<div className="flex min-h-screen flex-col bg-gray-950">
-			<HeaderPOS />
 			<HydrationBoundary state={dehydrate(queryClient)}>
 				<Suspense fallback={<KitchenViewLoading />}>
 					<KitchenView />
