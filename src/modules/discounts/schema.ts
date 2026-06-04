@@ -12,7 +12,7 @@ export const discountInsertSchema = z.object({
 		.positive({ message: 'Value must be positive.' }),
 	minOrderAmount: z.coerce.number().min(0).optional().nullable(),
 	maxUses: z.coerce.number().int().positive().optional().nullable(),
-	isActive: z.boolean().default(true),
+	isActive: z.boolean(),
 	expiresAt: z.string().optional().nullable(),
 });
 
