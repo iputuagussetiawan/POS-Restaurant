@@ -464,7 +464,7 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 					{data.items.map((order) => (
 						<OrderCard
 							key={order.id}
-							order={order as Order}
+							order={{ ...order, createdAt: new Date(order.createdAt) }}
 							onUpdate={handleUpdate}
 							isPending={updatingId === order.id}
 						/>
@@ -498,7 +498,7 @@ const OrdersContent = ({ viewMode }: { viewMode: ViewMode }) => {
 							{data.items.map((order) => (
 								<OrderRow
 									key={order.id}
-									order={order as Order}
+									order={{ ...order, createdAt: new Date(order.createdAt) }}
 									onUpdate={handleUpdate}
 									isPending={updatingId === order.id}
 								/>

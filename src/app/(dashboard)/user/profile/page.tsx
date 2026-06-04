@@ -7,6 +7,8 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
+export const dynamic = 'force-dynamic';
+
 const ProfilePage = async () => {
 	const queryClient = getQueryClient();
 	void queryClient.prefetchQuery(trpc.profile.get.queryOptions());
