@@ -2,7 +2,18 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { categories, companySettings, products } from '@/db/schema';
 import { createTRPCRouter, publicProcedure } from '@/trpc/init';
-import { and, between, count, desc, eq, getTableColumns, ilike, inArray, sql } from 'drizzle-orm';
+import {
+	and,
+	asc,
+	between,
+	count,
+	desc,
+	eq,
+	getTableColumns,
+	ilike,
+	inArray,
+	sql,
+} from 'drizzle-orm';
 import {
 	DEFAULT_PAGE,
 	DEFAULT_PAGE_SIZE,
@@ -24,10 +35,13 @@ export const shopRouter = createTRPCRouter({
 				categorySlugs: z.array(z.string()).nullish(),
 				minPrice: z.number().nullish(),
 				maxPrice: z.number().nullish(),
+				sort: z
+					.enum(['newest', 'oldest', 'price_asc', 'price_desc', 'name_asc', 'name_desc'])
+					.default('newest'),
 			})
 		)
 		.query(async ({ input }) => {
-			const { search, page, pageSize, categorySlugs, minPrice, maxPrice } = input;
+			const { search, page, pageSize, categorySlugs, minPrice, maxPrice, sort } = input;
 			const categoryFilter =
 				categorySlugs && categorySlugs.length > 0
 					? inArray(categories.slug, categorySlugs)
@@ -46,6 +60,15 @@ export const shopRouter = createTRPCRouter({
 				priceFilter
 			);
 
+			const orderBy = {
+				newest: [desc(products.createdAt), desc(products.id)],
+				oldest: [asc(products.createdAt), asc(products.id)],
+				price_asc: [asc(sql`CAST(${products.price} AS numeric)`)],
+				price_desc: [desc(sql`CAST(${products.price} AS numeric)`)],
+				name_asc: [asc(products.name)],
+				name_desc: [desc(products.name)],
+			}[sort];
+
 			const data = await db
 				.select({
 					...getTableColumns(products),
@@ -54,7 +77,7 @@ export const shopRouter = createTRPCRouter({
 				.from(products)
 				.innerJoin(categories, eq(products.categoryId, categories.id))
 				.where(whereClause)
-				.orderBy(desc(products.createdAt), desc(products.id))
+				.orderBy(...orderBy)
 				.limit(pageSize)
 				.offset((page - 1) * pageSize);
 

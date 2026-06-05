@@ -18,9 +18,18 @@ const ShopPage = async ({ searchParams }: Props) => {
 		trpc.shop.getProducts.queryOptions({
 			search: filters.search,
 			page: filters.page,
+			pageSize: filters.pageSize ?? 24,
 			categorySlugs: filters.categorySlug ? [filters.categorySlug] : undefined,
 			minPrice: filters.minPrice ?? undefined,
 			maxPrice: filters.maxPrice ?? undefined,
+			sort:
+				(filters.sort as
+					| 'newest'
+					| 'oldest'
+					| 'price_asc'
+					| 'price_desc'
+					| 'name_asc'
+					| 'name_desc') ?? 'newest',
 		})
 	);
 	void queryClient.prefetchQuery(trpc.shop.getCategories.queryOptions());

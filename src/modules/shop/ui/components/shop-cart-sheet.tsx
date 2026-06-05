@@ -11,6 +11,7 @@ import {
 	Loader2Icon,
 	ArrowRightIcon,
 } from 'lucide-react';
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -51,25 +52,6 @@ export const ShopCartSheet = ({
 
 	return (
 		<>
-			{/* Floating cart button */}
-			<button
-				onClick={() => onOpenChange(true)}
-				className="fixed right-5 bottom-6 z-40 flex items-center gap-2.5 rounded-2xl bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-green-600/30 transition-all hover:bg-green-700 active:scale-95"
-			>
-				<ShoppingBagIcon className="h-5 w-5" />
-				<span>My Cart</span>
-				{totalQty > 0 && (
-					<span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1.5 text-xs font-bold text-green-700">
-						{totalQty}
-					</span>
-				)}
-				{totalQty > 0 && (
-					<span className="border-l border-green-500 pl-2.5 text-green-100">
-						{format(total)}
-					</span>
-				)}
-			</button>
-
 			{/* Sheet */}
 			<Sheet open={open} onOpenChange={onOpenChange}>
 				<SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-sm">

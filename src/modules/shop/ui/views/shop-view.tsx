@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ErrorState from '@/components/error-state';
 import { useCartStore } from '@/modules/pos/store/use-cart-store';
-import { ShopProductBrowser, ShopToolbar } from '../components/shop-product-browser';
+import { ShopProductBrowser } from '../components/shop-product-browser';
 import { ShopCartSheet } from '../components/shop-cart-sheet';
 import ShopPaymentModal from '../components/shop-payment-modal';
 import ShopHeader from '../components/shop-header';
@@ -85,9 +85,8 @@ const ShopContent = () => {
 
 	return (
 		<div className="flex min-h-screen flex-col">
-			<ShopHeader />
+			<ShopHeader onCartOpen={() => setCartOpen(true)} />
 			<div className="flex flex-1 flex-col bg-gray-50">
-				<ShopToolbar />
 				<ShopProductBrowser />
 			</div>
 			<ShopCartSheet
