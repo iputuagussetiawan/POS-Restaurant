@@ -106,6 +106,21 @@ const SidebarContent = ({ onClose }: { onClose?: () => void }) => {
 	const SLIDER_MAX = 500000;
 	const SLIDER_STEP = 5000;
 
+	const debouncedMin = useDebounce(minInput, 500);
+	const debouncedMax = useDebounce(maxInput, 500);
+
+	/* auto-apply price when debounced inputs settle */
+	useEffect(() => {
+		const min = debouncedMin !== '' ? parseInt(debouncedMin, 10) : null;
+		const max = debouncedMax !== '' ? parseInt(debouncedMax, 10) : null;
+		const curMin = filters.minPrice ?? null;
+		const curMax = filters.maxPrice ?? null;
+		if (min !== curMin || max !== curMax) {
+			setFilters({ minPrice: min, maxPrice: max, page: 1 });
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debouncedMin, debouncedMax]);
+
 	const hasActivePrice = filters.minPrice != null || filters.maxPrice != null;
 	const hasActiveFilter = !!filters.categorySlug || hasActivePrice;
 

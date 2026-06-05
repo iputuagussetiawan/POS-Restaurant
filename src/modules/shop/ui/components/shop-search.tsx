@@ -3,21 +3,25 @@
 import { Input } from '@/components/ui/input';
 import { useShopFilters } from '../../hooks/use-shop-filter';
 import { Search, XIcon } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const ShopSearch = () => {
 	const [filters, setFilters] = useShopFilters();
 	const [value, setValue] = useState(filters.search || '');
 
-	const commit = (val: string) => setFilters({ search: val, page: 1 });
+	const debounced = useDebounce(value, 400);
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter') commit(value);
-	};
+	/* commit to URL whenever debounced value settles */
+	useEffect(() => {
+		if (debounced !== filters.search) {
+			setFilters({ search: debounced, page: 1 });
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debounced]);
 
 	const handleClear = () => {
 		setValue('');
-		commit('');
 	};
 
 	return (
@@ -26,7 +30,6 @@ const ShopSearch = () => {
 			<Input
 				value={value}
 				onChange={(e) => setValue(e.target.value)}
-				onKeyDown={handleKeyDown}
 				placeholder="Search products..."
 				className="h-9 rounded-full border-gray-200 bg-white pr-8 pl-9 text-sm text-gray-700 shadow-none placeholder:text-gray-400 focus-visible:border-green-500 focus-visible:ring-0"
 			/>
