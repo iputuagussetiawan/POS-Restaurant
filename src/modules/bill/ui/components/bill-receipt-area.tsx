@@ -3,14 +3,15 @@
 import { Loader2Icon, ReceiptIcon, XIcon } from 'lucide-react';
 import Receipt from './receipt';
 
-type Order = Parameters<typeof Receipt>[0]['order'];
+type OrderFull = Parameters<typeof Receipt>[0]['order'];
+type Order = Omit<OrderFull, 'createdAt'> & { createdAt: Date | string };
 
 interface Props {
 	isFetching: boolean;
 	showEmpty: boolean;
 	showNotFound: boolean;
 	showReceipt: boolean;
-	order?: (Order & { createdAt: Date | string }) | null;
+	order?: Order | null;
 	searchId: string;
 	onClear: () => void;
 }

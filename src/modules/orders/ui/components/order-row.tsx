@@ -7,7 +7,7 @@ import { OrderStatusBadge } from './order-status-badge';
 import { OrderActionMenu } from './order-action-menu';
 import { STATUS_ICON, PAYMENT_ICON, PAYMENT_LABEL, type Order } from './order-constants';
 import { useCurrency } from '@/modules/company/hooks/use-currency';
-import { UserIcon, BadgeCheckIcon, PackageIcon, ShieldCheckIcon } from 'lucide-react';
+import { UserIcon, BadgeCheckIcon, PackageIcon } from 'lucide-react';
 
 interface Props {
 	order: Order;
