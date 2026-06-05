@@ -96,6 +96,10 @@ export default async function LandingPage() {
 		redirect('/pos');
 	}
 
+	if (session?.user?.role === 'member') {
+		redirect('/shop');
+	}
+
 	if (session?.user?.role === 'kitchen') {
 		redirect('/kitchen');
 	}
@@ -121,6 +125,9 @@ export default async function LandingPage() {
 						<a href="#pricing" className="transition-colors hover:text-foreground">
 							Pricing
 						</a>
+						<Link href="/shop" className="transition-colors hover:text-foreground">
+							Shop
+						</Link>
 					</nav>
 
 					<div className="flex items-center gap-x-3">
@@ -382,6 +389,9 @@ export default async function LandingPage() {
 					</div>
 					<p>© {new Date().getFullYear()} FoodOrder. All rights reserved.</p>
 					<div className="flex gap-x-6">
+						<Link href="/shop" className="hover:text-foreground">
+							Shop
+						</Link>
 						{user ? (
 							<Link href="/admin" className="hover:text-foreground">
 								Dashboard
