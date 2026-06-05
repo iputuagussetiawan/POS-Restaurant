@@ -1,7 +1,8 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import HistoryView, { HistoryViewLoading } from '@/modules/history/ui/views/history-view';
+import HistoryView from '@/modules/history/ui/views/history-view';
+import { HistoryViewLoading } from '@/modules/history/ui/views/history-view-loading';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';

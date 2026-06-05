@@ -1,6 +1,7 @@
 import HeaderPOS from '@/modules/pos/ui/components/header';
 import FooterPOS from '@/modules/pos/ui/components/footer';
-import OrdersView, { OrdersViewLoading } from '@/modules/orders/ui/views/orders-view';
+import OrdersView from '@/modules/orders/ui/views/orders-view';
+import { OrdersViewLoading } from '@/modules/orders/ui/views/orders-view-loading';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';

@@ -9,7 +9,6 @@ import { useCurrency } from '@/modules/company/hooks/use-currency';
 import { useTRPC } from '@/trpc/client';
 import { useCartStore } from '@/modules/pos/store/use-cart-store';
 import ErrorState from '@/components/error-state';
-import { POSViewLoading } from './pos-view-loading';
 import { PosProductBrowser } from '../components/pos-product-browser';
 import { PosCart } from '../components/pos-cart';
 
