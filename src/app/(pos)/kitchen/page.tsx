@@ -1,4 +1,5 @@
-import KitchenView, { KitchenViewLoading } from '@/modules/kitchen/ui/views/kitchen-view';
+import KitchenView from '@/modules/kitchen/ui/views/kitchen-view';
+import { KitchenViewLoading } from '@/modules/kitchen/ui/views/kitchen-view-loading';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';

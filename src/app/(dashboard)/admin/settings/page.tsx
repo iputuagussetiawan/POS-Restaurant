@@ -1,9 +1,8 @@
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import CompanySettingsView, {
-	CompanySettingsViewLoading,
-} from '@/modules/company/ui/views/company-settings-view';
+import CompanySettingsView from '@/modules/company/ui/views/company-settings-view';
+import { CompanySettingsViewLoading } from '@/modules/company/ui/views/company-settings-view-loading';
 import { getQueryClient, trpc } from '@/trpc/server';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { Suspense } from 'react';

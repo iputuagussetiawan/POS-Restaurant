@@ -47,6 +47,25 @@ export const productsRouter = createTRPCRouter({
 		return existingProduct;
 	}),
 
+	getBySlug: protectedProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+		const [existingProduct] = await db
+			.select({
+				...getTableColumns(products),
+				categories,
+			})
+			.from(products)
+			.innerJoin(categories, eq(products.categoryId, categories.id))
+			.where(eq(products.slug, input.slug));
+
+		if (!existingProduct) {
+			throw new TRPCError({
+				code: 'NOT_FOUND',
+				message: 'Product not found',
+			});
+		}
+		return existingProduct;
+	}),
+
 	getMany: protectedProcedure
 		.input(
 			z.object({

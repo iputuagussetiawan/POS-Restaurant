@@ -4,6 +4,7 @@ import {
 	ColumnDef,
 	RowSelectionState,
 	SortingState,
+	Updater,
 	flexRender,
 	getCoreRowModel,
 	getSortedRowModel,
@@ -39,6 +40,15 @@ export function DataTable<TData, TValue>({
 
 	const controlled = rowSelection !== undefined && onRowSelectionChange !== undefined;
 
+	const handleSelectionChange = (updater: Updater<RowSelectionState>) => {
+		const next =
+			typeof updater === 'function'
+				? updater(controlled ? rowSelection! : internalSelection)
+				: updater;
+		if (controlled) onRowSelectionChange!(next);
+		else setInternalSelection(next);
+	};
+
 	const table = useReactTable({
 		data,
 		columns,
@@ -46,7 +56,7 @@ export function DataTable<TData, TValue>({
 		getSortedRowModel: getSortedRowModel(),
 		onSortingChange: setSorting,
 		enableRowSelection: controlled,
-		onRowSelectionChange: controlled ? onRowSelectionChange : setInternalSelection,
+		onRowSelectionChange: handleSelectionChange,
 		state: {
 			sorting,
 			rowSelection: controlled ? rowSelection : internalSelection,

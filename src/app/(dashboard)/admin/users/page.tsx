@@ -5,7 +5,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import React, { Suspense } from 'react';
-import { UsersViewLoading } from '@/modules/users/ui/views/users-view';
+import { UsersViewLoading } from '@/modules/users/ui/views/users-view-loading';
 
 const AdminUsersPage = async () => {
 	const session = await auth.api.getSession({ headers: await headers() });

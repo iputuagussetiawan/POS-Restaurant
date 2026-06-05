@@ -8,8 +8,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import {
 	CategoriesView,
 	CategoriesViewError,
-	CategoriesViewLoading,
 } from '@/modules/productCategories/ui/views/categories-view';
+import { CategoriesViewLoading } from '@/modules/productCategories/ui/views/categories-view-loading';
 import { loadSearchParams } from '@/modules/products/params';
 import { auth } from '@/lib/auth';
 import CategoriesListHeader from '@/modules/productCategories/ui/components/categories-list-header';

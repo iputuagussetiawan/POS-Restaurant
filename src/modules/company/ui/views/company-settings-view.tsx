@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useTRPC } from '@/trpc/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
@@ -16,37 +16,40 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
 	BuildingIcon,
 	BanknoteIcon,
 	QrCodeIcon,
 	ReceiptIcon,
-	SaveIcon,
-	Loader2Icon,
+	SettingsIcon,
+	ClockIcon,
+	MonitorIcon,
+	PercentIcon,
+	CoinsIcon,
 	GlobeIcon,
 	PhoneIcon,
 	MailIcon,
 	MapPinIcon,
 	ImageIcon,
-	CoinsIcon,
 	CheckIcon,
-	SettingsIcon,
-	ClockIcon,
-	MonitorIcon,
-	PercentIcon,
 } from 'lucide-react';
 import Image from 'next/image';
 import { Switch } from '@/components/ui/switch';
 import { Suspense, useState, useEffect } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import ErrorState from '@/components/error-state';
+import { CompanySettingsViewLoading } from './company-settings-view-loading';
 import { cn } from '@/lib/utils';
+import {
+	GroupLabel,
+	SaveBtn,
+	COMMON_TIMEZONES,
+	COMMON_CURRENCIES,
+} from '../components/company-form-helpers';
 
-/* ── Schemas ────────────────────────────────────────────────────────────── */
+/* ── Schemas ── */
 const companyInfoSchema = z.object({
 	name: z.string().min(1, 'Company name is required'),
 	tagline: z.string().optional(),
@@ -91,62 +94,15 @@ type PricingSettings = z.infer<typeof pricingSchema>;
 type CurrencySettings = z.infer<typeof currencySchema>;
 type TimezoneSettings = z.infer<typeof timezoneSchema>;
 
-const COMMON_TIMEZONES = [
-	{ value: 'UTC', label: 'UTC', region: 'Universal' },
-	{ value: 'America/New_York', label: 'Eastern Time', region: 'US' },
-	{ value: 'America/Chicago', label: 'Central Time', region: 'US' },
-	{ value: 'America/Denver', label: 'Mountain Time', region: 'US' },
-	{ value: 'America/Los_Angeles', label: 'Pacific Time', region: 'US' },
-	{ value: 'Europe/London', label: 'London', region: 'Europe' },
-	{ value: 'Europe/Paris', label: 'Paris / Berlin', region: 'Europe' },
-	{ value: 'Europe/Moscow', label: 'Moscow', region: 'Europe' },
-	{ value: 'Asia/Dubai', label: 'Dubai', region: 'Middle East' },
-	{ value: 'Asia/Kolkata', label: 'India (IST)', region: 'Asia' },
-	{ value: 'Asia/Bangkok', label: 'Bangkok / Jakarta', region: 'Asia' },
-	{ value: 'Asia/Singapore', label: 'Singapore / KL', region: 'Asia' },
-	{ value: 'Asia/Makassar', label: 'Bali / Lombok (WITA)', region: 'Asia' },
-	{ value: 'Asia/Jayapura', label: 'Papua (WIT)', region: 'Asia' },
-	{ value: 'Asia/Tokyo', label: 'Tokyo', region: 'Asia' },
-	{ value: 'Australia/Sydney', label: 'Sydney', region: 'Pacific' },
-	{ value: 'Pacific/Auckland', label: 'Auckland', region: 'Pacific' },
+const SIDEBAR_TABS = [
+	{ value: 'company', label: 'Company Info', icon: BuildingIcon, desc: 'Identity & contact' },
+	{ value: 'payment', label: 'Payment', icon: BanknoteIcon, desc: 'Bank & QRIS' },
+	{ value: 'pricing', label: 'Pricing', icon: PercentIcon, desc: 'Tax & service rate' },
+	{ value: 'receipt', label: 'Receipt', icon: ReceiptIcon, desc: 'Footer text' },
+	{ value: 'currency', label: 'Currency', icon: CoinsIcon, desc: 'Format & symbol' },
+	{ value: 'timezone', label: 'Timezone', icon: ClockIcon, desc: 'Local time & zone' },
 ];
 
-const COMMON_CURRENCIES = [
-	{ code: 'USD', symbol: '$', locale: 'en-US', label: 'US Dollar' },
-	{ code: 'EUR', symbol: '€', locale: 'de-DE', label: 'Euro' },
-	{ code: 'GBP', symbol: '£', locale: 'en-GB', label: 'British Pound' },
-	{ code: 'IDR', symbol: 'Rp', locale: 'id-ID', label: 'Indonesian Rupiah' },
-	{ code: 'SGD', symbol: 'S$', locale: 'en-SG', label: 'Singapore Dollar' },
-	{ code: 'MYR', symbol: 'RM', locale: 'ms-MY', label: 'Malaysian Ringgit' },
-	{ code: 'THB', symbol: '฿', locale: 'th-TH', label: 'Thai Baht' },
-	{ code: 'JPY', symbol: '¥', locale: 'ja-JP', label: 'Japanese Yen' },
-	{ code: 'AUD', symbol: 'A$', locale: 'en-AU', label: 'Australian Dollar' },
-];
-
-/* ── Field group label ──────────────────────────────────────────────────── */
-const GroupLabel = ({ children }: { children: React.ReactNode }) => (
-	<p className="mb-3 text-[11px] font-semibold tracking-widest text-gray-400 uppercase">
-		{children}
-	</p>
-);
-
-/* ── Save button ────────────────────────────────────────────────────────── */
-const SaveBtn = ({ isPending }: { isPending: boolean }) => (
-	<Button
-		type="submit"
-		disabled={isPending}
-		className="gap-2 bg-green-700 px-6 hover:bg-green-800"
-	>
-		{isPending ? (
-			<Loader2Icon className="h-4 w-4 animate-spin" />
-		) : (
-			<SaveIcon className="h-4 w-4" />
-		)}
-		Save Changes
-	</Button>
-);
-
-/* ── Main content ───────────────────────────────────────────────────────── */
 const CompanySettingsContent = () => {
 	const trpc = useTRPC();
 	const queryClient = useQueryClient();
@@ -192,9 +148,7 @@ const CompanySettingsContent = () => {
 
 	const receiptForm = useForm<ReceiptSettings>({
 		resolver: zodResolver(receiptSchema),
-		defaultValues: {
-			receiptFooter: settings?.receiptFooter ?? '',
-		},
+		defaultValues: { receiptFooter: settings?.receiptFooter ?? '' },
 	});
 
 	const pricingForm = useForm<PricingSettings>({
@@ -219,20 +173,16 @@ const CompanySettingsContent = () => {
 			currencyLocale: settings?.currencyLocale ?? 'en-US',
 		},
 	});
+
 	const timezoneForm = useForm<TimezoneSettings>({
 		resolver: zodResolver(timezoneSchema),
-		defaultValues: {
-			timezone: settings?.timezone ?? 'UTC',
-		},
+		defaultValues: { timezone: settings?.timezone ?? 'UTC' },
 	});
 	const watchedTimezone = timezoneForm.watch('timezone');
-
 	const [useSystemTz, setUseSystemTz] = useState(false);
 	const systemTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	useEffect(() => {
-		if (useSystemTz) {
-			timezoneForm.setValue('timezone', systemTz, { shouldDirty: true });
-		}
+		if (useSystemTz) timezoneForm.setValue('timezone', systemTz, { shouldDirty: true });
 	}, [useSystemTz, systemTz, timezoneForm]);
 
 	const [clockTime, setClockTime] = useState('');
@@ -276,7 +226,7 @@ const CompanySettingsContent = () => {
 
 	return (
 		<div className="flex flex-1 flex-col overflow-hidden">
-			{/* Page header */}
+			{/* Header */}
 			<div className="shrink-0 border-b bg-white px-6 py-5">
 				<div className="flex items-center gap-3">
 					<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-700">
@@ -291,27 +241,18 @@ const CompanySettingsContent = () => {
 				</div>
 			</div>
 
-			{/* Body: sidebar + content */}
 			<div className="flex min-h-0 flex-1 bg-muted/40">
 				<Tabs defaultValue="company" className="flex flex-1 flex-col md:flex-row">
-					{/* ── Mobile: segmented pill bar ── */}
+					{/* Mobile pill bar */}
 					<div className="shrink-0 border-b bg-white px-4 py-3 md:hidden">
 						<TabsList className="grid w-full grid-cols-6 rounded-xl bg-gray-100 p-1 shadow-none">
-							{[
-								{ value: 'company', icon: BuildingIcon, label: 'Company' },
-								{ value: 'payment', icon: BanknoteIcon, label: 'Payment' },
-								{ value: 'pricing', icon: PercentIcon, label: 'Pricing' },
-								{ value: 'receipt', icon: ReceiptIcon, label: 'Receipt' },
-								{ value: 'currency', icon: CoinsIcon, label: 'Currency' },
-								{ value: 'timezone', icon: ClockIcon, label: 'Timezone' },
-							].map((tab) => (
+							{SIDEBAR_TABS.map((tab) => (
 								<TabsTrigger
 									key={tab.value}
 									value={tab.value}
 									className={cn(
 										'flex flex-col items-center gap-0.5 rounded-lg py-2 text-xs font-medium',
-										'border-0 text-gray-500 shadow-none outline-none',
-										'transition-all duration-150',
+										'border-0 text-gray-500 shadow-none transition-all duration-150 outline-none',
 										'data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm'
 									)}
 								>
@@ -322,60 +263,22 @@ const CompanySettingsContent = () => {
 						</TabsList>
 					</div>
 
-					{/* ── Desktop: vertical sidebar ── */}
+					{/* Desktop sidebar */}
 					<TabsList
 						className={cn(
-							'fixed top-[400px] hidden w-52 shrink-0 flex-col items-stretch gap-0.5 rounded-none px-2 py-4 shadow-none md:flex'
+							'sticky top-0 hidden h-fit w-52 shrink-0 flex-col items-stretch gap-0.5 self-start rounded-none border-r bg-white px-2 py-4 shadow-none md:flex'
 						)}
 					>
 						<p className="mb-2 px-3 text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
 							Settings
 						</p>
-						{[
-							{
-								value: 'company',
-								label: 'Company Info',
-								icon: BuildingIcon,
-								desc: 'Identity & contact',
-							},
-							{
-								value: 'payment',
-								label: 'Payment',
-								icon: BanknoteIcon,
-								desc: 'Bank & QRIS',
-							},
-							{
-								value: 'pricing',
-								label: 'Pricing',
-								icon: PercentIcon,
-								desc: 'Tax & service rate',
-							},
-							{
-								value: 'receipt',
-								label: 'Receipt',
-								icon: ReceiptIcon,
-								desc: 'Footer text',
-							},
-							{
-								value: 'currency',
-								label: 'Currency',
-								icon: CoinsIcon,
-								desc: 'Format & symbol',
-							},
-							{
-								value: 'timezone',
-								label: 'Timezone',
-								icon: ClockIcon,
-								desc: 'Local time & zone',
-							},
-						].map((tab) => (
+						{SIDEBAR_TABS.map((tab) => (
 							<TabsTrigger
 								key={tab.value}
 								value={tab.value}
 								className={cn(
 									'group flex h-auto w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left',
-									'border-0 bg-transparent shadow-none outline-none',
-									'transition-all duration-150 ease-in-out',
+									'border-0 bg-transparent shadow-none transition-all duration-150 ease-in-out outline-none',
 									'text-gray-500 hover:bg-gray-50 hover:text-gray-900',
 									'data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md'
 								)}
@@ -413,7 +316,7 @@ const CompanySettingsContent = () => {
 						))}
 					</TabsList>
 
-					{/* ── Company Info tab ── */}
+					{/* Company tab */}
 					<TabsContent
 						value="company"
 						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
@@ -422,9 +325,7 @@ const CompanySettingsContent = () => {
 							<Form {...infoForm}>
 								<form onSubmit={infoForm.handleSubmit((v) => upsert.mutate(v))}>
 									<div className="rounded-2xl border bg-white shadow-sm">
-										{/* Logo preview sidebar + fields */}
 										<div className="grid grid-cols-1 gap-0 lg:grid-cols-[200px_1fr]">
-											{/* Logo preview panel */}
 											<div className="flex flex-col items-center gap-4 border-r-0 border-b bg-gray-50 px-6 py-8 lg:rounded-l-2xl lg:border-r lg:border-b-0">
 												<div
 													className={cn(
@@ -460,7 +361,6 @@ const CompanySettingsContent = () => {
 												</p>
 											</div>
 
-											{/* Fields */}
 											<div className="space-y-4 px-6 py-6">
 												<GroupLabel>Basic Info</GroupLabel>
 												<div className="grid gap-4 sm:grid-cols-2">
@@ -501,7 +401,6 @@ const CompanySettingsContent = () => {
 														)}
 													/>
 												</div>
-
 												<FormField
 													control={infoForm.control}
 													name="logoUrl"
@@ -521,10 +420,8 @@ const CompanySettingsContent = () => {
 														</FormItem>
 													)}
 												/>
-
 												<Separator />
 												<GroupLabel>Contact Details</GroupLabel>
-
 												<div className="grid gap-4 sm:grid-cols-2">
 													<FormField
 														control={infoForm.control}
@@ -604,7 +501,6 @@ const CompanySettingsContent = () => {
 												/>
 											</div>
 										</div>
-
 										<Separator />
 										<div className="flex justify-end px-6 py-4">
 											<SaveBtn isPending={upsert.isPending} />
@@ -615,7 +511,7 @@ const CompanySettingsContent = () => {
 						</div>
 					</TabsContent>
 
-					{/* ── Payment tab ── */}
+					{/* Payment tab */}
 					<TabsContent
 						value="payment"
 						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
@@ -625,7 +521,6 @@ const CompanySettingsContent = () => {
 								<form onSubmit={paymentForm.handleSubmit((v) => upsert.mutate(v))}>
 									<div className="rounded-2xl border bg-white shadow-sm">
 										<div className="space-y-6 px-6 py-6">
-											{/* Bank account */}
 											<div>
 												<GroupLabel>Bank Account</GroupLabel>
 												<div className="grid gap-4 sm:grid-cols-3">
@@ -679,10 +574,7 @@ const CompanySettingsContent = () => {
 													/>
 												</div>
 											</div>
-
 											<Separator />
-
-											{/* QRIS */}
 											<div>
 												<GroupLabel>QRIS</GroupLabel>
 												<div className="grid gap-6 sm:grid-cols-2">
@@ -722,7 +614,6 @@ const CompanySettingsContent = () => {
 															)}
 														/>
 													</div>
-													{/* QRIS preview */}
 													<div className="flex items-center justify-center">
 														<div
 															className={cn(
@@ -747,7 +638,6 @@ const CompanySettingsContent = () => {
 												</div>
 											</div>
 										</div>
-
 										<Separator />
 										<div className="flex justify-end px-6 py-4">
 											<SaveBtn isPending={upsert.isPending} />
@@ -758,7 +648,7 @@ const CompanySettingsContent = () => {
 						</div>
 					</TabsContent>
 
-					{/* ── Pricing tab ── */}
+					{/* Pricing tab */}
 					<TabsContent
 						value="pricing"
 						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
@@ -834,10 +724,7 @@ const CompanySettingsContent = () => {
 													)}
 												/>
 											</div>
-
 											<Separator />
-
-											{/* Live breakdown preview */}
 											<div>
 												<GroupLabel>Order Preview</GroupLabel>
 												<div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50 text-sm">
@@ -877,7 +764,6 @@ const CompanySettingsContent = () => {
 												</div>
 											</div>
 										</div>
-
 										<Separator />
 										<div className="flex justify-end px-6 py-4">
 											<SaveBtn isPending={upsert.isPending} />
@@ -888,7 +774,7 @@ const CompanySettingsContent = () => {
 						</div>
 					</TabsContent>
 
-					{/* ── Receipt tab ── */}
+					{/* Receipt tab */}
 					<TabsContent
 						value="receipt"
 						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
@@ -930,7 +816,7 @@ const CompanySettingsContent = () => {
 						</div>
 					</TabsContent>
 
-					{/* ── Currency tab ── */}
+					{/* Currency tab */}
 					<TabsContent
 						value="currency"
 						className="mt-0 min-h-0 flex-1 overflow-y-auto p-4 md:p-6"
@@ -987,9 +873,7 @@ const CompanySettingsContent = () => {
 													})}
 												</div>
 											</div>
-
 											<Separator />
-
 											<div>
 												<GroupLabel>Manual Configuration</GroupLabel>
 												<div className="grid gap-4 sm:grid-cols-3">
@@ -1064,8 +948,6 @@ const CompanySettingsContent = () => {
 													/>
 												</div>
 											</div>
-
-											{/* Live preview */}
 											<div className="flex items-center justify-between rounded-xl border border-green-100 bg-green-50 px-4 py-3">
 												<div>
 													<p className="text-xs font-semibold text-green-700">
@@ -1080,7 +962,6 @@ const CompanySettingsContent = () => {
 												</p>
 											</div>
 										</div>
-
 										<Separator />
 										<div className="flex justify-end px-6 py-4">
 											<SaveBtn isPending={upsert.isPending} />
@@ -1090,6 +971,7 @@ const CompanySettingsContent = () => {
 							</Form>
 						</div>
 					</TabsContent>
+
 					{/* Timezone tab */}
 					<TabsContent
 						value="timezone"
@@ -1100,7 +982,6 @@ const CompanySettingsContent = () => {
 								<form onSubmit={timezoneForm.handleSubmit((v) => upsert.mutate(v))}>
 									<div className="rounded-2xl border bg-white shadow-sm">
 										<div className="space-y-6 px-6 py-6">
-											{/* Use system timezone switch */}
 											<div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
 												<div className="flex items-center gap-3">
 													<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white shadow-sm">
@@ -1130,8 +1011,6 @@ const CompanySettingsContent = () => {
 													}}
 												/>
 											</div>
-
-											{/* Live clock */}
 											<div className="flex items-center justify-between rounded-xl border border-green-100 bg-green-50 px-4 py-4">
 												<div>
 													<p className="text-xs font-semibold text-green-700">
@@ -1145,7 +1024,6 @@ const CompanySettingsContent = () => {
 													{clockTime || '—'}
 												</p>
 											</div>
-
 											<div
 												className={cn(
 													useSystemTz && 'pointer-events-none opacity-40'
@@ -1197,9 +1075,7 @@ const CompanySettingsContent = () => {
 													})}
 												</div>
 											</div>
-
 											<Separator />
-
 											<div
 												className={cn(
 													useSystemTz && 'pointer-events-none opacity-40'
@@ -1231,7 +1107,6 @@ const CompanySettingsContent = () => {
 												/>
 											</div>
 										</div>
-
 										<Separator />
 										<div className="flex justify-end px-6 py-4">
 											<SaveBtn isPending={upsert.isPending} />
@@ -1247,61 +1122,6 @@ const CompanySettingsContent = () => {
 	);
 };
 
-/* ── Skeleton ───────────────────────────────────────────────────────────── */
-export const CompanySettingsViewLoading = () => (
-	<div className="flex flex-1 flex-col">
-		{/* Header */}
-		<div className="border-b bg-white px-6 py-5">
-			<div className="flex items-center gap-3">
-				<Skeleton className="h-10 w-10 rounded-xl" />
-				<div className="space-y-1.5">
-					<Skeleton className="h-4 w-40 rounded" />
-					<Skeleton className="h-3 w-64 rounded" />
-				</div>
-			</div>
-		</div>
-		{/* Body */}
-		<div className="flex flex-1 overflow-hidden bg-muted/40">
-			{/* Vertical nav skeleton */}
-			<div className="flex w-52 shrink-0 flex-col gap-1 border-r bg-white px-3 py-4">
-				{[1, 2, 3, 4, 5, 6].map((i) => (
-					<div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
-						<Skeleton className="h-8 w-8 rounded-lg" />
-						<div className="space-y-1">
-							<Skeleton className="h-3 w-20 rounded" />
-							<Skeleton className="h-2.5 w-16 rounded" />
-						</div>
-					</div>
-				))}
-			</div>
-			{/* Content skeleton */}
-			<div className="flex-1 p-6">
-				<div className="mx-auto max-w-3xl rounded-2xl border bg-white shadow-sm">
-					<div className="grid gap-0 md:grid-cols-[200px_1fr]">
-						<div className="flex flex-col items-center gap-4 rounded-l-2xl border-r bg-gray-50 px-6 py-8">
-							<Skeleton className="h-24 w-24 rounded-2xl" />
-							<Skeleton className="h-4 w-24 rounded" />
-						</div>
-						<div className="space-y-4 px-6 py-6">
-							{Array.from({ length: 6 }).map((_, i) => (
-								<div key={i} className="space-y-2">
-									<Skeleton className="h-3 w-20 rounded" />
-									<Skeleton className="h-9 w-full rounded-lg" />
-								</div>
-							))}
-						</div>
-					</div>
-					<Separator />
-					<div className="flex justify-end px-6 py-4">
-						<Skeleton className="h-9 w-32 rounded-lg" />
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-);
-
-/* ── Root ───────────────────────────────────────────────────────────────── */
 const CompanySettingsView = () => (
 	<div className="flex flex-1 flex-col">
 		<ErrorBoundary

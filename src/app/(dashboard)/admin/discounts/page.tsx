@@ -6,7 +6,8 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { SearchParams } from 'nuqs';
 import { loadDiscountSearchParams } from '@/modules/discounts/params';
 import DiscountsListHeader from '@/modules/discounts/ui/components/discounts-list-header';
-import { DiscountsView, DiscountsViewLoading } from '@/modules/discounts/ui/views/discounts-view';
+import { DiscountsView } from '@/modules/discounts/ui/views/discounts-view';
+import { DiscountsViewLoading } from '@/modules/discounts/ui/views/discounts-view-loading';
 import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
