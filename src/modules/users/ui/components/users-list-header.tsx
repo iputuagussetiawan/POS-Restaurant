@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-type Role = 'admin' | 'manager' | 'cashier' | 'kitchen' | 'pending';
+type Role = 'admin' | 'manager' | 'cashier' | 'kitchen' | 'member' | 'pending';
 type Status = 'active' | 'banned';
 
 const ROLES: { value: Role; label: string; color: string }[] = [
@@ -24,6 +24,7 @@ const ROLES: { value: Role; label: string; color: string }[] = [
 	{ value: 'manager', label: 'Manager', color: 'text-blue-600' },
 	{ value: 'cashier', label: 'Cashier', color: 'text-green-600' },
 	{ value: 'kitchen', label: 'Kitchen', color: 'text-orange-600' },
+	{ value: 'member', label: 'Member', color: 'text-purple-600' },
 	{ value: 'pending', label: 'Pending', color: 'text-yellow-600' },
 ];
 

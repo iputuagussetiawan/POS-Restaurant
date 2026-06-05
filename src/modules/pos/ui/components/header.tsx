@@ -5,6 +5,7 @@ import {
 	LayoutDashboardIcon,
 	ListIcon,
 	UtensilsCrossed,
+	ShoppingBagIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -25,11 +26,14 @@ const kitchenMenu = [
 	{ icon: ListIcon, label: 'Order List', href: '/order-list' },
 ];
 
+const memberMenu = [{ icon: ShoppingBagIcon, label: 'Shop', href: '/shop' }];
+
 const HeaderPOS = () => {
 	const pathname = usePathname();
 	const { data: session } = authClient.useSession();
-	const isKitchen = session?.user?.role === 'kitchen';
-	const mainMenu = isKitchen ? kitchenMenu : cashierMenu;
+	const role = session?.user?.role;
+	const mainMenu =
+		role === 'kitchen' ? kitchenMenu : role === 'member' ? memberMenu : cashierMenu;
 	return (
 		<nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 px-6 backdrop-blur-md">
 			<div className="flex h-14 items-center justify-between gap-4">

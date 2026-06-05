@@ -10,7 +10,7 @@ interface Props {
 	children: React.ReactNode;
 }
 
-const ALLOWED_ROLES = ['admin', 'manager', 'cashier', 'kitchen'];
+const ALLOWED_ROLES = ['admin', 'manager', 'cashier', 'kitchen', 'member'];
 
 const Layout = async ({ children }: Props) => {
 	const session = await auth.api.getSession({ headers: await headers() });
@@ -25,6 +25,10 @@ const Layout = async ({ children }: Props) => {
 
 	if (session.user.role === 'cashier') {
 		redirect('/pos');
+	}
+
+	if (session.user.role === 'member') {
+		redirect('/shop');
 	}
 
 	if (session.user.role === 'kitchen') {

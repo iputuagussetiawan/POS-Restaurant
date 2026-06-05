@@ -42,6 +42,11 @@ const ROLE_CONFIG: Record<string, { label: string; icon: React.ElementType; badg
 		icon: UtensilsCrossedIcon,
 		badge: 'border-orange-200 bg-orange-50 text-orange-700',
 	},
+	member: {
+		label: 'Member',
+		icon: UserIcon,
+		badge: 'border-purple-200 bg-purple-50 text-purple-700',
+	},
 	pending: {
 		label: 'Pending',
 		icon: UserIcon,
