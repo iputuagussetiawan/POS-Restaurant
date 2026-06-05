@@ -24,7 +24,7 @@ const ShopCardProduct = ({ data, taxRate, serviceRate }: ShopCardProductProps) =
 	const finalPrice = basePrice * (1 + taxRate + serviceRate);
 
 	return (
-		<div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+		<div className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition-all duration-200 hover:-translate-y-0.5">
 			{/* Image */}
 			<div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
 				<Image
@@ -75,7 +75,7 @@ const ShopCardProduct = ({ data, taxRate, serviceRate }: ShopCardProductProps) =
 							onClick={() => updateQuantity(data.id, qty - 1)}
 							className={cn(
 								'flex h-7 w-7 items-center justify-center rounded-lg transition-colors',
-								'bg-white text-gray-600 shadow-sm hover:bg-red-50 hover:text-red-600'
+								'bg-white text-gray-600 hover:bg-red-50 hover:text-red-600'
 							)}
 						>
 							<MinusIcon className="h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ const ShopCardProduct = ({ data, taxRate, serviceRate }: ShopCardProductProps) =
 						</span>
 						<button
 							onClick={() => addItem(data)}
-							className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm transition-colors hover:bg-green-700"
+							className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-600 text-white transition-colors hover:bg-green-700"
 						>
 							<PlusIcon className="h-3.5 w-3.5" />
 						</button>
